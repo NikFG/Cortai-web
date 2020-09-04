@@ -7,9 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Salao extends Model {
     protected $table = 'saloes';
 
-    public function avaliacoes() {
-        return $this->hasMany('App\Models\Avaliacao');
-    }
+
 
     public function horarios() {
         return $this->hasMany('App\Models\Horario');
