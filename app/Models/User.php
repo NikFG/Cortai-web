@@ -54,5 +54,11 @@ class User extends Authenticatable implements JWTSubject {
     public function getJWTCustomClaims() {
         return [];
     }
+    public function salao(){
+        return $this->belongsTo('App\Models\Salao');
+    }
+    public function servicos(){
+        return $this->belongsToMany('App\Models\Servico','cabeleireiro_servico', 'cabeleireiro_id');
+    }
 
 }

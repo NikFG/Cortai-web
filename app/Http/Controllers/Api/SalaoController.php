@@ -29,6 +29,7 @@ class SalaoController extends Controller {
             foreach ($saloes as $salao) {
                 $distancia = Util::haversineGreatCircleDistance($dados['latitude'],
                     $dados['longitude'], $salao->latitude, $salao->longitude);
+
                 $json->push(['data' => $salao, 'distancia' => $distancia]);
             }
             return response()->json($json->sortBy(['distancia', 'nome']), 200);
@@ -71,7 +72,7 @@ class SalaoController extends Controller {
 
     public function show($id) {
         $salao = Salao::findOrFail($id);
-        return response()->json(['data'=>$salao]);
+        return response()->json(['data' => $salao]);
     }
 
 
