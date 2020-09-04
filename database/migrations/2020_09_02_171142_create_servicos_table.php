@@ -13,10 +13,10 @@ class CreateServicosTable extends Migration {
     public function up() {
         Schema::create('servicos', function (Blueprint $table) {
             $table->id();
-            $table->boolean('ativo')->nullable()->default(false);
+            $table->boolean('ativo')->nullable()->default(true);
             $table->string('nome', 75);
             $table->float('valor');
-            $table->text('observacao');
+            $table->text('observacao')->nullable();
             $table->timestamps();
         });
     }
