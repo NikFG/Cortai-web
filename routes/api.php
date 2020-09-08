@@ -11,12 +11,14 @@ Route::group(['middleware' => ['apiJwt']], function () {
     Route::post('auth/logout', 'Api\AuthController@logout');
     Route::get('users', 'UserController@index');
 
+    //Salão
+    Route::get('saloes/teste','Api\SalaoController@home');
     Route::post('saloes/store', 'Api\SalaoController@store');
-    Route::get('saloes', 'Api\SalaoController@index');
     Route::put('saloes/edit/{id}', 'Api\SalaoController@update');
-    Route::delete('saloes/delete/{id}', 'Api\SalaoController@destroy');
     Route::get('saloes/show/{id}', 'Api\SalaoController@show');
+
+
+    
 });
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
+
+
