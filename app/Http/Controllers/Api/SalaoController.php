@@ -42,7 +42,6 @@ class SalaoController extends Controller {
 
 
     public function store(Request $request) {
-
         try {
             Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
@@ -64,6 +63,7 @@ class SalaoController extends Controller {
         $salao->latitude = $request->latitude;
         $salao->longitude = $request->longitude;
         $salao->telefone = $request->telefone;
+
         if ($salao->save()) {
             return response()->json(['Ok'], 200);
         }
@@ -113,7 +113,7 @@ class SalaoController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
-    public function teste(Request $request) {
+    public function home(Request $request) {
         try {
             Validator::make($request->only(['latitude', 'longitude', 'cidade']), [
                 'latitude' => 'required',
@@ -128,7 +128,7 @@ class SalaoController extends Controller {
                                         AS distancia FROM saloes_view where cidade = '$cidade' ORDER BY distancia,nome");
             return response()->json($salao, 200);
         } catch (ValidationException $e) {
-            return response()->json($e, 400);
+            return response()->json($e, 406);
         }
     }
 }
