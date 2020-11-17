@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class AuthController extends Controller {
@@ -31,11 +32,13 @@ class AuthController extends Controller {
     }
 
     protected function respondWithToken($token) {
+        $user = JWTAuth::setToken($token)->toUser();
         return response()->json([
             'access_token' => $token,
             'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60
-        ]);
+            'expires_in' => auth('api')->factory()->getTTL() * 60,
+            'user' => $user,
+        ], 200);
     }
 
     /* criar login google */
