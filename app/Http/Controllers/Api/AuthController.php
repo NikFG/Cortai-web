@@ -21,6 +21,15 @@ class AuthController extends Controller {
         return $this->respondWithToken($token);
     }
 
+    public function loginCriado($credentials) {
+
+        if (!$token = auth('api')->attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        return $this->respondWithToken($token);
+    }
+
     protected function respondWithToken($token) {
         return response()->json([
             'access_token' => $token,
@@ -31,7 +40,7 @@ class AuthController extends Controller {
 
     /* criar login google */
     public function loginGoogle(Request $request) {
-        $credentials = $request->only(['id','email', 'nome']);
+        $credentials = $request->only(['id', 'email', 'nome']);
         $validator = Validator::make($credentials, [
             'email' => 'required|email',
             'nome' => 'required|string',
@@ -55,4 +64,7 @@ class AuthController extends Controller {
         return response()->json(['message' => 'Successfully logged out']);
     }
 
+    public function criaConta(Request $request) {
+
+    }
 }
