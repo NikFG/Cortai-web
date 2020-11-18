@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Servico;
+use Dotenv\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ServicoController extends Controller {
 
@@ -19,51 +21,139 @@ class ServicoController extends Controller {
         } else {
             $servicos = Servico::whereHas('users', function ($q) use ($user) {
                 $q->where('id', $user->id);
-            })->get();
+            })->where('salao_id', $user->salao_id)->get();
         }
         return response()->json($servicos, 200);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request) {
-        //
+    public function indexDeleted() {
+        $user = Auth::user();
+        $servicos = null;
+
+        if ($user->is_dono_salao) {
+            $servicos = Servico::withTrashed()->where('salao_id', $user->salao_id)->get();
+        } else {
+            $servicos = Servico::whereHas('users', function ($q) use ($user) {
+                $q->where('id', $user->id);
+            })->where('salao_id', $user->salao_id)->get();
+        }
+        return response()->json($servicos, 200);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return JsonResponse
-     */
+
+    public function store(Request $request) {
+        $user = Auth::user();
+        if ($user->is_dono_salao || $user->is_cabeleireiro) {
+            try {
+                \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'nome' => 'required|string|max:75',
+                    'valor' => 'required|numeric',
+                    'observacao' => 'string',
+                    'imagem' => '',
+                ])->validate();
+            } catch (ValidationException $e) {
+                return response()->json($e, 500);
+            }
+            $servico = new Servico();
+            $servico->nome = $request->nome;
+            $servico->valor = $request->valor;
+            $servico->observacao = $request->observacao;
+            $servico->salao_id = $user->salao_id;
+            if ($servico->save()) {
+
+                if ($request->hasFile('imagem')) {
+                    $file = $request->file('imagem');
+                    if (!$file->isValid()) {
+                        return response()->json(['invalid_file_upload'], 400);
+                    }
+                    $path = storage_path() . '/img/servico/' . $servico->id . '/';
+                    $file_name = 'perfil.png';
+                    $file->move($path, $file_name);
+                    $servico->imagem = 'storage/img/salao/' . $servico->id . '/' . $file_name;
+                    $servico->save();
+                }
+            }
+
+            return response()->json(['Ok'], 200);
+        }
+        return response()->json(["erro"], 500);
+
+    }
+
+
     public function show(int $id) {
 
-        $servico = Servico::where('id',$id)->with('users')->get();
+        $servico = Servico::where('id', $id)->with('users')->get();
         return response()->json($servico, 200);
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id) {
-        //
+
+    public
+    function update(Request $request, $id) {
+        $user = Auth::user();
+        if ($user->is_dono_salao || $user->is_cabeleireiro) {
+            try {
+                \Illuminate\Support\Facades\Validator::make($request->all(), [
+                    'nome' => 'required|string|max:75',
+                    'valor' => 'required|numeric',
+                    'observacao' => 'string',
+                    'imagem' => '',
+                ])->validate();
+            } catch (ValidationException $e) {
+                return response()->json($e, 500);
+            }
+
+            $servico = Servico::findOrFail($id);
+            if($this->permite_alterar_servico($user,$servico)) {
+                $servico->nome = $request->nome;
+                $servico->valor = $request->valor;
+                $servico->observacao = $request->observacao;
+                $servico->salao_id = $user->salao_id;
+                if ($request->hasFile('imagem')) {
+                    $file = $request->file('imagem');
+                    if (!$file->isValid()) {
+                        return response()->json(['invalid_file_upload'], 400);
+                    }
+                    $path = storage_path() . '/img/servico/' . $servico->id . '/';
+                    $file_name = 'perfil.png';
+                    $file->move($path, $file_name);
+                    $servico->imagem = 'storage/img/salao/' . $servico->id . '/' . $file_name;
+                }
+                $servico->save();
+                return response()->json(['Ok'], 200);
+            }
+        }
+        return response()->json(["erro"], 500);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id) {
-        //
+
+    public
+    function destroy($id) {
+        $user = Auth::user();
+
+        $servico = Servico::findOrFail($id);
+        if ($this->permite_alterar_servico($user, $servico))
+            if ($servico->delete()) {
+                return response()->json(['Ok'], 200);
+            }
+        return response()->json(['Erro'], 400);
+    }
+
+    public
+    function restore($id) {
+        $user = Auth::user();
+
+        $servico = Servico::onlyTrashed()->findOrFail($id);
+        if ($this->permite_alterar_servico($user, $servico))
+            if ($servico->restore()) {
+                return response()->json(['Ok'], 200);
+            }
+        return response()->json(['Erro'], 400);
+    }
+
+    private
+    function permite_alterar_servico($user, Servico $servico) {
+        return $user->salao_id == $servico->salao_id
+            && ($user->is_dono_salao || $servico->users->pluck('id')->contains($user->id));
     }
 }
