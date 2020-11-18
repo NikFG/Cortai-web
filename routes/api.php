@@ -16,16 +16,21 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Salão
     Route::get('saloes/home','Api\SalaoController@home');
     Route::post('saloes/store', 'Api\SalaoController@store');
-    Route::put('saloes/edit/{id}', 'Api\SalaoController@update');
+    Route::post('saloes/edit/{id}', 'Api\SalaoController@update');
     Route::get('saloes/show/{id}', 'Api\SalaoController@show');
+    Route::delete('saloes/destroy/{id}','Api\SalaoController@destroy');
+    Route::patch('saloes/restore/{id}','Api\SalaoController@restore');
+
 
     //Serviço
     Route::get('servicos', 'Api\ServicoController@index');
     Route::post('servicos/store', 'Api\ServicoController@store');
-    Route::put('servicos/edit/{id}', 'Api\ServicoController@update');
+    Route::post('servicos/edit/{id}', 'Api\ServicoController@update');
     Route::get('servicos/show/{id}', 'Api\ServicoController@show');
-
+    Route::delete('servicos/destroy/{id}','Api\ServicoController@destroy');
+    Route::patch('servicos/restore/{id}','Api\ServicoController@restore');
     
 });
+
 
 
