@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Salao extends Model {
-    protected $table = 'saloes';
+    use SoftDeletes;
 
+    protected $table = 'saloes';
 
 
     public function horarios() {
@@ -21,6 +23,9 @@ class Salao extends Model {
         return $this->hasMany('App\Models\User');
     }
 
+    public function servicos() {
+        return $this->belongsTo('App\Models\Servico');
+    }
     public function forma_pagamentos() {
         return $this->belongsToMany('App\Models\FormaPagamento',
             'salao_formapagamentos', 'salao_id')
