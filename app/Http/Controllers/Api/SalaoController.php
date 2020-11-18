@@ -168,4 +168,13 @@ class SalaoController extends Controller {
             return response()->json($e, 406);
         }
     }
+
+    public function restore($id) {
+        $salao = Salao::onlyTrashed()->findOrFail($id);
+
+        if ($salao->restore()) {
+            return response()->json(['Ok'], 200);
+        }
+        return response()->json(['Erro'], 400);
+    }
 }
