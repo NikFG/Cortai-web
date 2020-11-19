@@ -29,12 +29,15 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Serviço
     Route::group(['prefix' => 'servicos'], function () {
         Route::get('/', 'Api\ServicoController@index');
+        Route::get('/salao/{idSalao}', 'Api\ServicoController@servicoSalao');
         Route::post('store', 'Api\ServicoController@store');
         Route::post('edit/{id}', 'Api\ServicoController@update');
         Route::get('show/{id}', 'Api\ServicoController@show');
         Route::delete('destroy/{id}', 'Api\ServicoController@destroy');
         Route::patch('restore/{id}', 'Api\ServicoController@restore');
     });
+
+
     //Horário
     Route::group(['prefix' => 'horarios'], function () {
         Route::get('/cliente', 'Api\HorarioController@clienteIndex');
@@ -45,6 +48,16 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::delete('destroy/{id}', 'Api\HorarioController@destroy');
     });
 
+    //Forma Pagamento
+    Route::group(['prefix' => 'forma_pagamento'], function () {
+        Route::get('/', 'Api\FormaPagamento@index');
+        Route::post('store', 'Api\FormaPagamento@store');
+        Route::post('edit/{id}', 'Api\FormaPagamento@update');
+        Route::get('show/{id}', 'Api\FormaPagamento@show');
+        Route::delete('destroy/{id}', 'Api\FormaPagamento@destroy');
+        Route::patch('/link/{id}','Api\FormaPagamento@vincular');
+        Route::patch('/unlink/{id}','Api\FormaPagamento@desvincular');
+    });
 
 });
 
