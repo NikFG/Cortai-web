@@ -26,6 +26,14 @@ class ServicoController extends Controller {
         return response()->json($servicos, 200);
     }
 
+    public function servicoSalao($idSalao) {
+        $user = Auth::user();
+        $servicos = Servico::where('salao_id', $idSalao)
+            ->has('cabeleireiros')->with('cabeleireiros')->orderBy('nome')->get();
+
+        return response()->json($servicos, 200);
+    }
+
     public function indexDeleted() {
         $user = Auth::user();
         $servicos = null;
@@ -104,7 +112,7 @@ class ServicoController extends Controller {
             }
 
             $servico = Servico::findOrFail($id);
-            if($this->permite_alterar_servico($user,$servico)) {
+            if ($this->permite_alterar_servico($user, $servico)) {
                 $servico->nome = $request->nome;
                 $servico->valor = $request->valor;
                 $servico->observacao = $request->observacao;
