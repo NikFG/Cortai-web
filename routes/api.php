@@ -51,13 +51,23 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
     //Forma Pagamento
     Route::group(['prefix' => 'forma_pagamento'], function () {
-        Route::get('/', 'Api\FormaPagamento@index');
-        Route::post('store', 'Api\FormaPagamento@store');
-        Route::post('edit/{id}', 'Api\FormaPagamento@update');
-        Route::get('show/{id}', 'Api\FormaPagamento@show');
-        Route::delete('destroy/{id}', 'Api\FormaPagamento@destroy');
-        Route::patch('/link/{id}','Api\FormaPagamento@vincular');
-        Route::patch('/unlink/{id}','Api\FormaPagamento@desvincular');
+        Route::get('/', 'Api\FormaPagamentoController@index');
+        Route::post('store', 'Api\FormaPagamentoController@store');
+        Route::post('edit/{id}', 'Api\FormaPagamentoController@update');
+        Route::get('show/{id}', 'Api\FormaPagamentoController@show');
+        Route::delete('destroy/{id}', 'Api\FormaPagamentoController@destroy');
+        Route::patch('/link/{id}','Api\FormaPagamentoController@vincular');
+        Route::patch('/unlink/{id}','Api\FormaPagamentoController@desvincular');
+    });
+    
+    //Funcionamento
+    Route::group(['prefix' => 'funcionamento'], function () {
+        Route::get('/{id}', 'Api\FuncionamentoController@index');
+        Route::get('show/{id}', 'Api\FuncionamentoController@show');
+        Route::post('store', 'Api\FuncionamentoController@store');
+        Route::post('edit/{id}', 'Api\FuncionamentoController@update');
+        Route::delete('delete/{id}', 'Api\FuncionamentoController@destroy');
+        Route::delete('deleteAll', 'Api\FuncionamentoController@destroyAll');
     });
 
 });
