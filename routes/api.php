@@ -61,5 +61,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
 });
 
+Route::get('agenda/{id}','Api\HorarioController@confirmaHorario');
+
 
 
