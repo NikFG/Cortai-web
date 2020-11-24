@@ -53,7 +53,7 @@ class SalaoController extends Controller {
                 'imagem' => '',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:12',
+                'telefone' => 'required|string|max:20',
             ])->validate();
         } catch (ValidationException $e) {
         }
@@ -90,7 +90,7 @@ class SalaoController extends Controller {
 
     public function show($id) {
         $salao = Salao::findOrFail($id);
-        return response()->json(['data' => $salao]);
+        return response()->json($salao);
     }
 
     public function update(Request $request, $id) {
@@ -103,7 +103,7 @@ class SalaoController extends Controller {
                 'imagem' => '',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:12',
+                'telefone' => 'required|string|max:20',
             ])->validate();
         } catch (ValidationException $e) {
             return response()->json($e, 500);
