@@ -109,12 +109,25 @@ class HorarioController extends Controller {
      * Remove the specified resource from storage.
      *
      * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function destroy($id) {
         $horario = Horario::findOrFail($id);
         $horario->cancelado = true;
         $horario->save();
         return response()->json(['Ok'], 200);
+    }
+
+    public function confirmaHorario($id) {
+        $horario = Horario::findOrFail($id);
+        $horario->confirmado = true;
+        $horario->save();
+        $quantidade = $this->contaHorario();
+        event(new ContaConfirmar(22, $quantidade));
+        return response()->json($quantidade);
+    }
+
+    private function contaHorario() {
+        return Horario::where('confirmado', false)->count();
     }
 }
