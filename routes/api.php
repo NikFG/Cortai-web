@@ -40,8 +40,8 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
     //Horário
     Route::group(['prefix' => 'horarios'], function () {
-        Route::get('/cliente', 'Api\HorarioController@clienteIndex');
-        Route::get('/cabeleireiro', 'Api\HorarioController@cabeleireiroIndex');
+        Route::get('/cliente/{pago}', 'Api\HorarioController@clienteIndex');
+        Route::get('/cabeleireiro/{confirmado}', 'Api\HorarioController@cabeleireiroIndex');
         Route::post('store', 'Api\HorarioController@store');
         Route::post('edit/{id}', 'Api\HorarioController@update');
         Route::get('show/{id}', 'Api\HorarioController@show');
