@@ -20,6 +20,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::get('home', 'Api\SalaoController@home');
         Route::post('store', 'Api\SalaoController@store');
         Route::post('edit/{id}', 'Api\SalaoController@update');
+        Route::patch('edit/cabeleireiro/{email}', 'Api\SalaoController@adicionaCabeleireiro');
         Route::get('show/{id}', 'Api\SalaoController@show');
         Route::delete('destroy/{id}', 'Api\SalaoController@destroy');
         Route::patch('restore/{id}', 'Api\SalaoController@restore');
