@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\ContaConfirmar;
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -13,9 +15,10 @@ use Illuminate\Validation\ValidationException;
 class HorarioController extends Controller {
 
 
-    public function clienteIndex() {
+    public function clienteIndex(Request $request) {
         $user = Auth::user();
-        $horarios = Horario::where('cliente_id', $user->id)->get();
+        $horarios = Horario::where('cliente_id', $user->id)->where('pago', $request->pago)->
+        orderBy('data','desc')->orderBy('hora','desc')->with('servicos')->has('servicos')->get();
         return response()->json(compact('horarios'), 200);
     }
 
@@ -31,8 +34,8 @@ class HorarioController extends Controller {
     /**
      * Store a newly created resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param Request $request
+     * @return JsonResponse
      */
     public function store(Request $request) {
         $user = Auth::user();
@@ -54,8 +57,10 @@ class HorarioController extends Controller {
         $horario->forma_pagamento_id = $request->forma_pagamento_id;
         $horario->cliente_id = $user->id;
         $horario->salao_id = User::select(['salao_id'])->find($request->cabeleireiro_id);
-        if ($horario->save())
+        if ($horario->save()) {
+            event(new ContaConfirmar(22, $this->contaHorario()));
             return response()->json(['Ok'], 200);
+        }
         return response()->json(['Erro'], 500);
     }
 
@@ -63,7 +68,7 @@ class HorarioController extends Controller {
      * Display the specified resource.
      *
      * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function show($id) {
         $user = Auth::user();
@@ -77,9 +82,9 @@ class HorarioController extends Controller {
     /**
      * Update the specified resource in storage.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param Request $request
      * @param int $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function update(Request $request, $id) {
         $user = Auth::user();
