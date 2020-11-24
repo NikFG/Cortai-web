@@ -110,7 +110,7 @@ class SalaoController extends Controller {
         }
         $user = Auth::user();
 
-        if ($user->is_dono_salao==true && $user->salao_id == $id) {
+        if ($user->is_dono_salao == true && $user->salao_id == $id) {
 
 
             $salao = Salao::findOrFail($id);
@@ -174,6 +174,19 @@ class SalaoController extends Controller {
 
         if ($salao->restore()) {
             return response()->json(['Ok'], 200);
+        }
+        return response()->json(['Erro'], 400);
+    }
+
+    public function adicionaCabeleireiro(Request $request, $email) {
+        $user = Auth::user();
+        if ($user->is_dono_salao == true) {
+            $cabeleireiro = User::where('email', $email)->firstOrFail();
+            $cabeleireiro->salao()->associate($user->salao_id);
+            $cabeleireiro->is_cabeleireiro = true;
+            if ($cabeleireiro->save()) {
+                return response()->json(['Ok'], 200);
+            }
         }
         return response()->json(['Erro'], 400);
     }
