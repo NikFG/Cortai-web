@@ -18,15 +18,22 @@ class HorarioController extends Controller {
     public function clienteIndex(Request $request) {
         $user = Auth::user();
         $horarios = Horario::where('cliente_id', $user->id)->where('pago', $request->pago)->
-        orderBy('data','desc')->orderBy('hora','desc')->with('servicos')->has('servicos')->get();
+        orderBy('data', 'desc')->orderBy('hora', 'desc')->with('servicos')->has('servicos')->get();
         return response()->json(compact('horarios'), 200);
     }
 
-    public function cabeleireiroIndex() {
+    public function cabeleireiroIndex($confirmado) {
         $user = Auth::user();
         if ($user->is_cabeleireiro) {
-            $horarios = Horario::where('cabeleireiro_id', $user->id)->get();
-            return response()->json(compact('horarios'), 200);
+            $horarios = Horario::where('cabeleireiro_id', $user->id)
+                ->where('confirmado',$confirmado)
+                ->with('cliente')
+                ->with('cabeleireiro')
+                ->with('servicos')
+                ->orderBy('data', 'desc')
+                ->orderBy('hora', 'desc')
+                ->get();
+            return response()->json($horarios, 200);
         }
         return response()->json(['Erro'], 400);
     }
