@@ -18,6 +18,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Salão
     Route::group(['prefix' => 'saloes'], function () {
         Route::get('home', 'Api\SalaoController@home');
+        Route::get('/cabeleireiros', 'Api\SalaoController@cabeleireiros');
         Route::post('store', 'Api\SalaoController@store');
         Route::post('edit/{id}', 'Api\SalaoController@update');
         Route::patch('edit/cabeleireiro/{email}', 'Api\SalaoController@adicionaCabeleireiro');
@@ -30,6 +31,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Serviço
     Route::group(['prefix' => 'servicos'], function () {
         Route::get('/', 'Api\ServicoController@index');
+        Route::get('/cabeleireiro', 'Api\ServicoController@indexAll');
         Route::get('/salao/{idSalao}', 'Api\ServicoController@servicoSalao');
         Route::post('store', 'Api\ServicoController@store');
         Route::post('edit/{id}', 'Api\ServicoController@update');
@@ -70,9 +72,16 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::delete('deleteAll', 'Api\FuncionamentoController@destroyAll');
     });
 
+/*    //Avaliação
+    Route::group(['prefix' => 'avaliacoes'], function () {
+        Route::get('/{id}','Api\AvaliacaoController@index');
+    });*/
+
 });
 
 Route::get('agenda/{id}','Api\HorarioController@confirmaHorario');
 
-
+Route::group(['prefix' => 'avaliacoes'], function () {
+    Route::get('/{id}','Api\AvaliacaoController@index');
+});
 

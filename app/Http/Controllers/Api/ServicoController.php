@@ -29,8 +29,35 @@ class ServicoController extends Controller {
     public function servicoSalao($idSalao) {
         $user = Auth::user();
         $servicos = Servico::where('salao_id', $idSalao)
-            ->has('cabeleireiros')->with('cabeleireiros')->orderBy('nome')->get();
+            ->has('cabeleireiros')
+            ->with('cabeleireiros')
+            ->orderBy('nome')
+            ->get();
 
+        return response()->json($servicos, 200);
+    }
+
+    public function indexAll() {
+        $user = Auth::user();
+        $servicos = null;
+
+        if ($user->is_dono_salao) {
+            $servicos = Servico::withTrashed()
+                ->with('cabeleireiros')
+                ->where('salao_id', $user->salao_id)
+                ->orderBy('deleted_at')
+                ->orderBy('nome')
+                ->get();
+        } else {
+            $servicos = Servico::withTrashed()
+                ->whereHas('users', function ($q) use ($user) {
+                    $q->where('id', $user->id);
+                })
+                ->where('salao_id', $user->salao_id)
+                ->orderBy('deleted_at')
+                ->orderBy('nome')
+                ->get();
+        }
         return response()->json($servicos, 200);
     }
 
@@ -39,15 +66,14 @@ class ServicoController extends Controller {
         $servicos = null;
 
         if ($user->is_dono_salao) {
-            $servicos = Servico::withTrashed()->where('salao_id', $user->salao_id)->get();
+            $servicos = Servico::onlyTrashed()->where('salao_id', $user->salao_id)->get();
         } else {
-            $servicos = Servico::whereHas('users', function ($q) use ($user) {
+            $servicos = Servico::onlyTrashed()->whereHas('users', function ($q) use ($user) {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
         }
         return response()->json($servicos, 200);
     }
-
 
     public function store(Request $request) {
         $user = Auth::user();
@@ -56,7 +82,8 @@ class ServicoController extends Controller {
                 \Illuminate\Support\Facades\Validator::make($request->all(), [
                     'nome' => 'required|string|max:75',
                     'valor' => 'required|numeric',
-                    'observacao' => 'string',
+                    'observacao' => '',
+                    'cabeleireiros' => 'required',
                     'imagem' => '',
                 ])->validate();
             } catch (ValidationException $e) {
@@ -66,9 +93,10 @@ class ServicoController extends Controller {
             $servico->nome = $request->nome;
             $servico->valor = $request->valor;
             $servico->observacao = $request->observacao;
-            $servico->salao_id = $user->salao_id;
-            if ($servico->save()) {
+            $servico->salao()->associate($user->salao_id);
 
+            if ($servico->save()) {
+                $servico->cabeleireiros()->sync($request->cabeleireiros);
                 if ($request->hasFile('imagem')) {
                     $file = $request->file('imagem');
                     if (!$file->isValid()) {
@@ -77,7 +105,7 @@ class ServicoController extends Controller {
                     $path = storage_path() . '/img/servico/' . $servico->id . '/';
                     $file_name = 'perfil.png';
                     $file->move($path, $file_name);
-                    $servico->imagem = 'storage/img/salao/' . $servico->id . '/' . $file_name;
+                    $servico->imagem = 'storage/img/servico/' . $servico->id . '/' . $file_name;
                     $servico->save();
                 }
             }
@@ -96,8 +124,7 @@ class ServicoController extends Controller {
     }
 
 
-    public
-    function update(Request $request, $id) {
+    public function update(Request $request, $id) {
         $user = Auth::user();
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
             try {
@@ -106,6 +133,7 @@ class ServicoController extends Controller {
                     'valor' => 'required|numeric',
                     'observacao' => 'string',
                     'imagem' => '',
+                    'ativo' => 'required',
                 ])->validate();
             } catch (ValidationException $e) {
                 return response()->json($e, 500);
@@ -125,9 +153,12 @@ class ServicoController extends Controller {
                     $path = storage_path() . '/img/servico/' . $servico->id . '/';
                     $file_name = 'perfil.png';
                     $file->move($path, $file_name);
-                    $servico->imagem = 'storage/img/salao/' . $servico->id . '/' . $file_name;
+                    $servico->imagem = 'storage/img/servico/' . $servico->id . '/' . $file_name;
                 }
                 $servico->save();
+                if ($request->ativo == false) {
+                    $this->destroy($id);
+                }
                 return response()->json(['Ok'], 200);
             }
         }

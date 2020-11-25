@@ -43,6 +43,12 @@ class SalaoController extends Controller {
 
     }
 
+    public function cabeleireiros() {
+        $user = Auth::user();
+        $salao = Salao::findOrFail($user->salao_id);
+        return response()->json($salao->cabeleireiros, 200);
+
+    }
 
     public function store(Request $request) {
         try {
