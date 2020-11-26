@@ -50,6 +50,9 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::post('edit/{id}', 'Api\HorarioController@update');
         Route::get('show/{id}', 'Api\HorarioController@show');
         Route::delete('destroy/{id}', 'Api\HorarioController@destroy');
+        Route::put('confirma/{id}','Api\HorarioController@confirmaHorario');
+        Route::put('cancela/{id}','Api\HorarioController@cancelaHorario');
+        Route::put('paga/{id}','Api\HorarioController@confirmaPagamento');
     });
 
     //Forma Pagamento
