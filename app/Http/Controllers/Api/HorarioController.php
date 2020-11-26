@@ -158,10 +158,27 @@ class HorarioController extends Controller {
         $horario->save();
         $quantidade = $this->contaHorario();
         event(new ContaConfirmar(22, $quantidade));
-        return response()->json($quantidade);
+        return response()->json(['Ok']);
+    }
+
+    public function cancelaHorario($id) {
+        $horario = Horario::findOrFail($id);
+        $horario->cancelado = true;
+        $horario->save();
+        $quantidade = $this->contaHorario();
+        event(new ContaConfirmar(22, $quantidade));
+        return response()->json(['Ok']);
+    }
+
+
+    public function confirmaPagamento($id) {
+        $horario = Horario::findOrFail($id);
+        $horario->pago = true;
+        $horario->save();
+        return response()->json(['Ok']);
     }
 
     private function contaHorario() {
-        return Horario::where('confirmado', false)->count();
+        return Horario::where('confirmado', false)->where('cancelado', false)->count();
     }
 }
