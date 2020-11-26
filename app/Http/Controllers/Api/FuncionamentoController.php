@@ -21,6 +21,12 @@ class FuncionamentoController extends Controller {
         return response()->json($funcionamento, 200);
     }
 
+    public function indexDiaSemana($dia_semana, $salao_id) {
+        $funcionamento = Funcionamento::where('salao_id', $salao_id)
+            ->where('dia_semana', $dia_semana)->firstOrFail();
+        return response()->json($funcionamento, 200);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
