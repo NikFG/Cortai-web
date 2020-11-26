@@ -18,8 +18,14 @@ class HorarioController extends Controller {
 
     public function clienteIndex(Request $request) {
         $user = Auth::user();
-        $horarios = Horario::where('cliente_id', $user->id)->where('pago', $request->pago)->
-        orderBy('data', 'desc')->orderBy('hora', 'desc')->with('servicos')->has('servicos')->get();
+        $horarios = Horario::where('cliente_id', $user->id)
+            ->where('pago', $request->pago)
+            ->orderBy('data', 'desc')
+            ->orderBy('hora', 'desc')
+            ->with('servicos')->has('servicos')
+            ->with('cliente')
+            ->with('cabeleireiro')
+            ->get();
         return response()->json(compact('horarios'), 200);
     }
 
@@ -43,6 +49,8 @@ class HorarioController extends Controller {
         $formatada = Carbon::parse($data);
         $user = Auth::user();
         $horarios = Horario::where('cabeleireiro_id', $cabeleireiro_id)
+            ->with('cliente')
+            ->with('cabeleireiro')
             ->where('data', $formatada->format('Y-m-d'))
             ->get();
         return response()->json($horarios, 200);
