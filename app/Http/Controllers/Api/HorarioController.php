@@ -6,6 +6,7 @@ use App\Events\ContaConfirmar;
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,7 @@ class HorarioController extends Controller {
         $user = Auth::user();
         if ($user->is_cabeleireiro) {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
-                ->where('confirmado',$confirmado)
+                ->where('confirmado', $confirmado)
                 ->with('cliente')
                 ->with('cabeleireiro')
                 ->with('servicos')
@@ -38,6 +39,17 @@ class HorarioController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
+    public function agenda($cabeleireiro_id, $data) {
+        $formatada = Carbon::parse($data);
+        $user = Auth::user();
+        $horarios = Horario::where('cabeleireiro_id', $cabeleireiro_id)
+            ->where('data', $formatada->format('Y-m-d'))
+            ->get();
+        return response()->json($horarios, 200);
+
+//        return response()->json(['Erro'], 400);
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -46,25 +58,35 @@ class HorarioController extends Controller {
      */
     public function store(Request $request) {
         $user = Auth::user();
+
         try {
             Validator::make($request->all(), [
-                'data' => 'required|date',
-                'hora' => 'required',
                 'cabeleireiro_id' => 'required',
+                'cliente_id' => 'required',
+                'confirmado' => 'required',
+                'data' => 'required',
                 'forma_pagamento_id' => 'required',
+                'hora' => 'required',
+                'pago' => 'required',
+                'servicos' => 'required'
             ])->validate();
         } catch (ValidationException $e) {
             return response()->json($e, 500);
         }
         $horario = new Horario();
-        $horario->data = $request->data;
+        $horario->cabeleireiro()->associate($request->cabeleireiro_id);
+        $horario->cliente()->associate($request->cliente_id);
+        $salao_id = (User::select(['salao_id'])->find($request->cabeleireiro_id))->salao_id;
+        $horario->salao()->associate($salao_id);
+        $horario->forma_pagamento()->associate($request->forma_pagamento_id);
+        $horario->confirmado = $request->confirmado;
+        $horario->data = Carbon::parse($request->data)->format('Y-m-d');
         $horario->hora = $request->hora;
-        $horario->cliente_id = $request->data;
-        $horario->cabeleireiro_id = $request->cabeleireiro_id;
-        $horario->forma_pagamento_id = $request->forma_pagamento_id;
-        $horario->cliente_id = $user->id;
-        $horario->salao_id = User::select(['salao_id'])->find($request->cabeleireiro_id);
+        $horario->pago = $request->pago;
         if ($horario->save()) {
+            foreach ($request->servicos as $s) {
+                $horario->servicos()->sync([$s['id'] => ['descricao' => $s['nome'], 'valor' => $s['valor']]]);
+            }
             event(new ContaConfirmar(22, $this->contaHorario()));
             return response()->json(['Ok'], 200);
         }
