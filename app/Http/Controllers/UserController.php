@@ -50,6 +50,20 @@ class UserController extends Controller {
 
     public function update(Request $request, $id) {
 
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required',
+            'telefone' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json('Erro', 406);
+        }
+        $user = User::findOrFail($id);
+        $user->nome = $request->nome;
+        $user->telefone = $request->telefone;
+        if ($user->save()) {
+            return response()->json(['Ok'], 200);
+        }
+        return response()->json('Erro', 406);
     }
 
 

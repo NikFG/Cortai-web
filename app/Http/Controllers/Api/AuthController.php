@@ -43,18 +43,24 @@ class AuthController extends Controller {
 
     /* criar login google */
     public function loginGoogle(Request $request) {
-        $credentials = $request->only(['id', 'email', 'nome']);
+        $credentials = $request->only(['email', 'nome', 'password']);
         $validator = Validator::make($credentials, [
             'email' => 'required|email',
             'nome' => 'required|string',
+            'password' => 'required'
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $id = $credentials['id'];
-        $u = User::findOrFail($id);
+        $u = User::where('email', $request->email)->first();
+        if ($u == null)
+            $u = new User();
+        $u->nome = $request->nome;
+        $u->email = $request->email;
+        $u->google_token = $request->password;
+        $u->save();
         if (!$token = auth('api')->login($u)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

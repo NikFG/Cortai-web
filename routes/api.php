@@ -12,7 +12,9 @@ Route::group(['prefix' => 'auth'], function () {
 
 
 Route::group(['middleware' => ['apiJwt']], function () {
+
     Route::post('auth/logout', 'Api\AuthController@logout');
+    Route::post('auth/edit/{id}', 'UserController@update');
     Route::get('users', 'UserController@index');
 
     //Salão
