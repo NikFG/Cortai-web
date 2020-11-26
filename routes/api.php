@@ -45,6 +45,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     Route::group(['prefix' => 'horarios'], function () {
         Route::get('/cliente/{pago}', 'Api\HorarioController@clienteIndex');
         Route::get('/cabeleireiro/{confirmado}', 'Api\HorarioController@cabeleireiroIndex');
+        Route::get('/cabeleireiro/{cabeleireiro_id}/data/{data}', 'Api\HorarioController@agenda');
         Route::post('store', 'Api\HorarioController@store');
         Route::post('edit/{id}', 'Api\HorarioController@update');
         Route::get('show/{id}', 'Api\HorarioController@show');
@@ -52,7 +53,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     });
 
     //Forma Pagamento
-    Route::group(['prefix' => 'forma_pagamento'], function () {
+    Route::group(['prefix' => 'formaPagamento'], function () {
         Route::get('/', 'Api\FormaPagamentoController@index');
         Route::post('store', 'Api\FormaPagamentoController@store');
         Route::post('edit/{id}', 'Api\FormaPagamentoController@update');
@@ -65,6 +66,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Funcionamento
     Route::group(['prefix' => 'funcionamento'], function () {
         Route::get('/{id}', 'Api\FuncionamentoController@index');
+        Route::get('/{dia_semana}/{salao_id}','Api\FuncionamentoController@indexDiaSemana');
         Route::get('show/{id}', 'Api\FuncionamentoController@show');
         Route::post('store', 'Api\FuncionamentoController@store');
         Route::post('edit/{id}', 'Api\FuncionamentoController@update');
