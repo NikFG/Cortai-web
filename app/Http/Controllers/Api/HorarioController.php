@@ -95,7 +95,7 @@ class HorarioController extends Controller {
             foreach ($request->servicos as $s) {
                 $horario->servicos()->sync([$s['id'] => ['descricao' => $s['nome'], 'valor' => $s['valor']]]);
             }
-            event(new ContaConfirmar(22, $this->contaHorario()));
+            event(new ContaConfirmar($horario->cabeleireiro_id, $this->contaHorario($horario->cabeleireiro_id)));
             return response()->json(['Ok'], 200);
         }
         return response()->json(['Erro'], 500);
@@ -164,8 +164,8 @@ class HorarioController extends Controller {
         $horario = Horario::findOrFail($id);
         $horario->confirmado = true;
         $horario->save();
-        $quantidade = $this->contaHorario();
-        event(new ContaConfirmar(22, $quantidade));
+        $quantidade = $this->contaHorario($horario->cabeleireiro_id);
+        event(new ContaConfirmar($horario->cabeleireiro_id, $quantidade));
         return response()->json(['Ok']);
     }
 
@@ -173,8 +173,8 @@ class HorarioController extends Controller {
         $horario = Horario::findOrFail($id);
         $horario->cancelado = true;
         $horario->save();
-        $quantidade = $this->contaHorario();
-        event(new ContaConfirmar(22, $quantidade));
+        $quantidade = $this->contaHorario($horario->cabeleireiro_id);
+        event(new ContaConfirmar($horario->cabeleireiro_id, $quantidade));
         return response()->json(['Ok']);
     }
 
@@ -186,7 +186,14 @@ class HorarioController extends Controller {
         return response()->json(['Ok']);
     }
 
-    private function contaHorario() {
-        return Horario::where('confirmado', false)->where('cancelado', false)->count();
+    public function conta($id) {
+        return response()->json(['quantidade' => $this->contaHorario($id)]);
+    }
+
+    private function contaHorario($id) {
+        return Horario::where('confirmado', false)
+            ->where('cancelado', false)
+            ->where('cabeleireiro_id', $id)
+            ->count();
     }
 }
