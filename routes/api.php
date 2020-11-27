@@ -51,6 +51,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::post('store', 'Api\HorarioController@store');
         Route::post('edit/{id}', 'Api\HorarioController@update');
         Route::get('show/{id}', 'Api\HorarioController@show');
+        Route::get('count/{id}', 'Api\HorarioController@conta');
         Route::delete('destroy/{id}', 'Api\HorarioController@destroy');
         Route::put('confirma/{id}','Api\HorarioController@confirmaHorario');
         Route::put('cancela/{id}','Api\HorarioController@cancelaHorario');
@@ -79,16 +80,11 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::delete('deleteAll', 'Api\FuncionamentoController@destroyAll');
     });
 
-/*    //Avaliação
     Route::group(['prefix' => 'avaliacoes'], function () {
         Route::get('/{id}','Api\AvaliacaoController@index');
-    });*/
+    });
 
 });
 
-Route::get('agenda/{id}','Api\HorarioController@confirmaHorario');
 
-Route::group(['prefix' => 'avaliacoes'], function () {
-    Route::get('/{id}','Api\AvaliacaoController@index');
-});
 
