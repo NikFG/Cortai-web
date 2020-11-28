@@ -43,27 +43,33 @@ class AuthController extends Controller {
 
     /* criar login google */
     public function loginGoogle(Request $request) {
-        $credentials = $request->only(['email', 'nome', 'password']);
-        $validator = Validator::make($credentials, [
+        $credentials = $request->only(['email', 'password']);
+        $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'nome' => 'required|string',
-            'password' => 'required'
+            'password' => 'required|string',
+            'telefone' => '',
+            'imagem' => '',
         ]);
 
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
 
-        $u = User::where('email', $request->email)->first();
-        if ($u == null)
-            $u = new User();
-        $u->nome = $request->nome;
-        $u->email = $request->email;
-        $u->google_token = $request->password;
-        $u->save();
-        if (!$token = auth('api')->login($u)) {
+        $user = User::where('email', $request->email)->first();
+        if ($user == null) {
+            $user = new User();
+            $user->nome = $request->nome;
+            $user->password = bcrypt($request->password);
+            $user->email = $request->email;
+            $user->telefone = $request->telefone;
+            $user->imagem = $request->imagem;
+            $user->save();
+        }
+        if (!$token = auth('api')->attempt($credentials)) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
+
         return $this->respondWithToken($token);
     }
 
