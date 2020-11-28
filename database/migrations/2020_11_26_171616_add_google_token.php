@@ -12,7 +12,7 @@ class AddGoogleToken extends Migration {
      */
     public function up() {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('google_token', 300)->nullable();
+            $table->boolean('is_google')->default(0);
         });
     }
 
@@ -23,7 +23,7 @@ class AddGoogleToken extends Migration {
      */
     public function down() {
         Schema::table('users', function (Blueprint $table) {
-            $table->removeColumn('google_token');
+            $table->removeColumn('is_google');
         });
     }
 }
