@@ -34,7 +34,7 @@ class ContaConfirmar implements ShouldBroadcastNow {
      * @return \Illuminate\Broadcasting\Channel|array
      */
     public function broadcastOn() {
-        return new PrivateChannel('user.' . $this->user_id);
+        return new PrivateChannel('conta.' . $this->user_id);
     }
 
     public function broadcastWith() {
