@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\AgendaCabeleireiro;
 use App\Events\ContaConfirmar;
 use App\Http\Controllers\Controller;
 use App\Models\Horario;
@@ -54,8 +55,6 @@ class HorarioController extends Controller {
             ->where('data', $formatada->format('Y-m-d'))
             ->get();
         return response()->json($horarios, 200);
-
-//        return response()->json(['Erro'], 400);
     }
 
     /**
@@ -96,8 +95,10 @@ class HorarioController extends Controller {
                 $horario->servicos()->sync([$s['id'] => ['descricao' => $s['nome'], 'valor' => $s['valor']]]);
             }
             event(new ContaConfirmar($horario->cabeleireiro_id, $this->contaHorario($horario->cabeleireiro_id)));
+            event(new AgendaCabeleireiro($horario->cabeleireiro_id, $horario->data));
             return response()->json(['Ok'], 200);
         }
+
         return response()->json(['Erro'], 500);
     }
 
@@ -141,8 +142,10 @@ class HorarioController extends Controller {
             $horario->hora = $request->hora;
             $horario->cliente_id = $request->data;
             $horario->forma_pagamento_id = $request->forma_pagamento_id;
-            if ($horario->save())
+            if ($horario->save()) {
+                event(new AgendaCabeleireiro($horario->cabeleireiro_id, $horario->data));
                 return response()->json(['Ok'], 200);
+            }
         }
         return response()->json(['Erro'], 500);
     }
