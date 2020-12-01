@@ -17,3 +17,7 @@ Broadcast::routes(['middleware' => ['apiJwt']]);
 Broadcast::channel('conta.{id}', function ($user, $id) {
     return $id == $user->id;
 });
+
+Broadcast::channel('agenda.{id}', function ($user, $id) {
+    return true;
+});
