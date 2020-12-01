@@ -9,6 +9,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.3",
+        "berkayk/onesignal-laravel": "^1.0",
         "doctrine/dbal": "^3.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0.2",
@@ -16,6 +17,7 @@
         "laravel/framework": "^8.6",
         "laravel/tinker": "^2.4.2",
         "laravel/ui": "^3.1",
+        "lcobucci/jwt": "3.3.3",
         "pusher/pusher-php-server": "^4.1",
         "tymon/jwt-auth": "1.0.1"
     },
