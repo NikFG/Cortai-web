@@ -53,9 +53,9 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::get('show/{id}', 'Api\HorarioController@show');
         Route::get('count/{id}', 'Api\HorarioController@conta');
         Route::delete('destroy/{id}', 'Api\HorarioController@destroy');
-        Route::put('confirma/{id}','Api\HorarioController@confirmaHorario');
-        Route::put('cancela/{id}','Api\HorarioController@cancelaHorario');
-        Route::put('paga/{id}','Api\HorarioController@confirmaPagamento');
+        Route::put('confirma/{id}', 'Api\HorarioController@confirmaHorario');
+        Route::put('cancela/{id}', 'Api\HorarioController@cancelaHorario');
+        Route::put('paga/{id}', 'Api\HorarioController@confirmaPagamento');
     });
 
     //Forma Pagamento
@@ -65,14 +65,14 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::post('edit/{id}', 'Api\FormaPagamentoController@update');
         Route::get('show/{id}', 'Api\FormaPagamentoController@show');
         Route::delete('destroy/{id}', 'Api\FormaPagamentoController@destroy');
-        Route::patch('/link/{id}','Api\FormaPagamentoController@vincular');
-        Route::patch('/unlink/{id}','Api\FormaPagamentoController@desvincular');
+        Route::patch('/link/{id}', 'Api\FormaPagamentoController@vincular');
+        Route::patch('/unlink/{id}', 'Api\FormaPagamentoController@desvincular');
     });
-    
+
     //Funcionamento
     Route::group(['prefix' => 'funcionamento'], function () {
         Route::get('/{id}', 'Api\FuncionamentoController@index');
-        Route::get('/{dia_semana}/{salao_id}','Api\FuncionamentoController@indexDiaSemana');
+        Route::get('/{dia_semana}/{salao_id}', 'Api\FuncionamentoController@indexDiaSemana');
         Route::get('show/{id}', 'Api\FuncionamentoController@show');
         Route::post('store', 'Api\FuncionamentoController@store');
         Route::post('edit/{id}', 'Api\FuncionamentoController@update');
@@ -81,10 +81,9 @@ Route::group(['middleware' => ['apiJwt']], function () {
     });
 
     Route::group(['prefix' => 'avaliacoes'], function () {
-        Route::get('/{id}','Api\AvaliacaoController@index');
+        Route::get('/{id}', 'Api\AvaliacaoController@index');
     });
 
+    Route::get('teste', 'Api\AgendaController@teste');
 });
-
-
 
