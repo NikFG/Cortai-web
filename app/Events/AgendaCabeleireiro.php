@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use App\Models\Horario;
+use Carbon\Carbon;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -23,8 +24,13 @@ class AgendaCabeleireiro implements ShouldBroadcastNow {
     private $horario;
     private $cabeleireiro_id;
 
-    public function __construct($horario, int $cabeleireiro_id) {
-        $this->horario = $horario;
+    public function __construct(int $cabeleireiro_id, $data) {
+        $formatada = Carbon::parse($data);
+        $this->horario = Horario::where('cabeleireiro_id', $cabeleireiro_id)
+            ->with('cliente')
+            ->with('cabeleireiro')
+            ->where('data', $formatada->format('Y-m-d'))
+            ->get();
         $this->cabeleireiro_id = $cabeleireiro_id;
     }
 
