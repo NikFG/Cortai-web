@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use OneSignal;
 
 class HorarioController extends Controller {
 
@@ -94,8 +95,23 @@ class HorarioController extends Controller {
             foreach ($request->servicos as $s) {
                 $horario->servicos()->sync([$s['id'] => ['descricao' => $s['nome'], 'valor' => $s['valor']]]);
             }
-            event(new ContaConfirmar($horario->cabeleireiro_id, $this->contaHorario($horario->cabeleireiro_id)));
             event(new AgendaCabeleireiro($horario->cabeleireiro_id, $horario->data));
+            $params = [];
+            $params['android_accent_color'] = 'FFF57D21'; // argb color value
+            $params['small_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+            $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+            OneSignal::addParams($params)->sendNotificationToExternalUser(
+                "Dia {$request->data} às {$request->hora}.Verifique seu app!!",
+                $horario->cabeleireiro->id,
+                $url = null,
+                $data = null,
+                $buttons = null,
+                $schedule = null,
+                "Novo horário marcado com você {$horario->cabeleireiro->nome}!"
+            );
+
+            event(new ContaConfirmar($horario->cabeleireiro_id, $this->contaHorario($horario->cabeleireiro_id)));
+
             return response()->json(['Ok'], 200);
         }
 
@@ -168,6 +184,21 @@ class HorarioController extends Controller {
         $horario->confirmado = true;
         $horario->save();
         $quantidade = $this->contaHorario($horario->cabeleireiro_id);
+        $params = [];
+        $params['android_accent_color'] = 'FFF57D21'; // argb color value
+        $params['small_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+        $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+        $data = Carbon::parse($horario->data);
+        $hora = Carbon::parse($horario->hora);
+        OneSignal::addParams($params)->sendNotificationToExternalUser(
+            "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}.Verifique seu app!!",
+            $horario->cabeleireiro->id,
+            $url = null,
+            $data = null,
+            $buttons = null,
+            $schedule = null,
+            "Horário confirmado com {$horario->cabeleireiro->nome}! =)"
+        );
         event(new ContaConfirmar($horario->cabeleireiro_id, $quantidade));
         return response()->json(['Ok']);
     }
@@ -177,6 +208,22 @@ class HorarioController extends Controller {
         $horario->cancelado = true;
         $horario->save();
         $quantidade = $this->contaHorario($horario->cabeleireiro_id);
+        $params = [];
+        $params['android_accent_color'] = 'FFF57D21'; // argb color value
+        $params['small_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+        $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
+        $data = Carbon::parse($horario->data);
+        $hora = Carbon::parse($horario->hora);
+        OneSignal::addParams($params)->sendNotificationToExternalUser(
+            "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}\n
+            Pedimos desculpas pelo ocorrido, mas você pode agendar novamente",
+            $horario->cabeleireiro->id,
+            $url = null,
+            $data = null,
+            $buttons = null,
+            $schedule = null,
+            "Infelizmente seu horário com {$horario->cabeleireiro->nome} foi cancelado! =("
+        );
         event(new ContaConfirmar($horario->cabeleireiro_id, $quantidade));
         return response()->json(['Ok']);
     }
