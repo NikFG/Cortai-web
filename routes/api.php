@@ -8,7 +8,9 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('login', 'Api\AuthController@login')->name('login');
     Route::post('login/google', 'Api\AuthController@loginGoogle');
     Route::post('user/create', 'UserController@store');
+    Route::post('login/reset', 'Api\AuthController@resetPassword');
 });
+Route::post('password/reset', 'Api\AuthController@reset');
 
 
 Route::group(['middleware' => ['apiJwt']], function () {
@@ -47,6 +49,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     Route::group(['prefix' => 'horarios'], function () {
         Route::get('/cliente/{pago}', 'Api\HorarioController@clienteIndex');
         Route::get('/cabeleireiro/{confirmado}', 'Api\HorarioController@cabeleireiroIndex');
+        Route::get('/cabeleireiro', 'Api\HorarioController@cabeleireiroIndex2');
         Route::get('/cabeleireiro/{cabeleireiro_id}/data/{data}', 'Api\HorarioController@agenda');
         Route::post('store', 'Api\HorarioController@store');
         Route::post('edit/{id}', 'Api\HorarioController@update');
