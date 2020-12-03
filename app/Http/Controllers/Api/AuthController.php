@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -79,7 +80,30 @@ class AuthController extends Controller {
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    public function criaConta(Request $request) {
+    public function resetPassword(Request $request) {
 
+
+        $credentials = $request->validate(['email' => 'required|email']);
+        $user = User::where('email', $request->only('email'))->firstOrFail();
+        Password::sendResetLink($credentials);
+        return response()->json(["msg" => 'Reset password link sent on your email id.']);
+    }
+    public function reset() {
+        $credentials = request()->validate([
+            'email' => 'required|email',
+            'token' => 'required|string',
+            'password' => 'required|string|confirmed'
+        ]);
+
+        $reset_password_status = Password::reset($credentials, function ($user, $password) {
+            $user->password = bcrypt($password);
+            $user->save();
+        });
+
+        if ($reset_password_status == Password::INVALID_TOKEN) {
+            return response()->json(["msg" => "Invalid token provided"], 400);
+        }
+
+        return response()->json(["msg" => "Password has been successfully changed"]);
     }
 }
