@@ -47,6 +47,20 @@ class HorarioController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
+    public function cabeleireiroIndex2() {
+        $user = Auth::user();
+        if ($user->is_cabeleireiro) {
+            $horarios = Horario::where('cabeleireiro_id', $user->id)
+                ->with('cliente')
+                ->with('cabeleireiro')
+                ->with('servicos')
+                ->orderBy('data', 'desc')
+                ->orderBy('hora', 'desc')
+                ->get();
+            return response()->json($horarios, 200);
+        }
+        return response()->json(['Erro'], 400);
+    }
     public function agenda($cabeleireiro_id, $data) {
         $formatada = Carbon::parse($data);
         $user = Auth::user();
