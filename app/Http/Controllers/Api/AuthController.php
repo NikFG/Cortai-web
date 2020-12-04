@@ -23,23 +23,21 @@ class AuthController extends Controller {
         return $this->respondWithToken($token);
     }
 
-    public function loginCriado($credentials) {
-
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return $this->respondWithToken($token);
-    }
 
     protected function respondWithToken($token) {
         $user = JWTAuth::setToken($token)->toUser();
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => auth('api')->factory()->getTTL() * 60,
-            'user' => $user,
-        ], 200);
+
+        if ($user->email_verified_at != null) {
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60,
+                'user' => $user,
+            ], 200);
+        }
+        JWTAuth::setToken($token)->invalidate();
+        $user->sendEmailVerificationNotification();
+        return response()->json(['Email não verificado'], 403);
     }
 
     /* criar login google */
@@ -47,7 +45,7 @@ class AuthController extends Controller {
         $credentials = $request->only(['email', 'password']);
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
-            'nome' => 'required|string',
+            'nome' => 'string',
             'password' => 'required|string',
             'telefone' => '',
             'imagem' => '',
@@ -58,6 +56,7 @@ class AuthController extends Controller {
         }
 
         $user = User::where('email', $request->email)->first();
+
         if ($user == null) {
             $user = new User();
             $user->nome = $request->nome;
@@ -65,6 +64,7 @@ class AuthController extends Controller {
             $user->email = $request->email;
             $user->telefone = $request->telefone;
             $user->imagem = $request->imagem;
+            $user->is_google = true;
             $user->save();
         }
         if (!$token = auth('api')->attempt($credentials)) {
@@ -82,12 +82,13 @@ class AuthController extends Controller {
 
     public function resetPassword(Request $request) {
 
-
+        //TODO tratar se email existe
         $credentials = $request->validate(['email' => 'required|email']);
         $user = User::where('email', $request->only('email'))->firstOrFail();
         Password::sendResetLink($credentials);
         return response()->json(["msg" => 'Reset password link sent on your email id.']);
     }
+
     public function reset() {
         $credentials = request()->validate([
             'email' => 'required|email',
@@ -101,7 +102,7 @@ class AuthController extends Controller {
         });
 
         if ($reset_password_status == Password::INVALID_TOKEN) {
-            return response()->json(["msg" => "Invalid token provided"], 400);
+            return response()->json(["msg" => "Invalid token provided"], 403);
         }
 
         return response()->json(["msg" => "Password has been successfully changed"]);

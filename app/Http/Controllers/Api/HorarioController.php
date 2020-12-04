@@ -61,6 +61,7 @@ class HorarioController extends Controller {
         }
         return response()->json(['Erro'], 400);
     }
+
     public function agenda($cabeleireiro_id, $data) {
         $formatada = Carbon::parse($data);
         $user = Auth::user();
@@ -81,20 +82,20 @@ class HorarioController extends Controller {
     public function store(Request $request) {
         $user = Auth::user();
 
-        try {
-            Validator::make($request->all(), [
-                'cabeleireiro_id' => 'required',
-                'cliente_id' => 'required',
-                'confirmado' => 'required',
-                'data' => 'required',
-                'forma_pagamento_id' => 'required',
-                'hora' => 'required',
-                'pago' => 'required',
-                'servicos' => 'required'
-            ])->validate();
-        } catch (ValidationException $e) {
-            return response()->json($e, 500);
-        }
+
+        $validator = Validator::make($request->all(), [
+            'cabeleireiro_id' => 'required|exists:users,id',
+            'cliente_id' => 'required|exists:users,id',
+            'confirmado' => 'required',
+            'data' => 'required|date',
+            'forma_pagamento_id' => 'required|exists:forma_pagamentos,id',
+            'hora' => 'required|date_format:H:i',
+            'pago' => 'required',
+            'servicos' => 'required|array'
+        ]);
+        if ($validator->fails())
+            return response()->json($validator->errors(), 422);
+
         $horario = new Horario();
         $horario->cabeleireiro()->associate($request->cabeleireiro_id);
         $horario->cliente()->associate($request->cliente_id);
@@ -156,16 +157,15 @@ class HorarioController extends Controller {
      */
     public function update(Request $request, $id) {
         $user = Auth::user();
-        try {
-            Validator::make($request->all(), [
-                'data' => 'required|date',
-                'hora' => 'required',
-                'cabeleireiro_id' => 'required',
-                'forma_pagamento_id' => 'required',
-            ])->validate();
-        } catch (ValidationException $e) {
-            return response()->json($e, 500);
-        }
+        $validator = Validator::make($request->all(), [
+            'cabeleireiro_id' => 'required|exists:users,id',
+            'data' => 'required|date',
+            'forma_pagamento_id' => 'required|exists:forma_pagamentos,id',
+            'hora' => 'required|date_format:H:i',
+        ]);
+        if ($validator->fails())
+            return response()->json($validator->errors(), 422);
+
         $horario = Horario::findOrFail($id);
         if ($horario->cliente->id == $user->id || $horario->cabeleireiro->id == $user->id) {
             $horario->data = $request->data;

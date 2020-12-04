@@ -35,32 +35,32 @@ class FuncionamentoController extends Controller {
      */
     public function store(Request $request) {
         $user = Auth::user();
-        if ($user->is_dono_salao)
-            try {
-                Validator::make($request->all(), [
-                    'dia_semana' => 'required|string|max:3',
-                    'horario_abertura' => 'required',
-                    'horario_fechamento' => 'required',
-                    'intervalo' => 'required|numeric',
-                    'salao_id' => 'required',
-                ])->validate();
-                $funcionamento = Funcionamento::where('dia_semana', $request->dia_semana)
-                    ->where('salao_id', $request->salao_id)->first();
-                if ($funcionamento != null) {
-                    $this->destroyAll();
-                }
-                $funcionamento = new Funcionamento();
-                $funcionamento->dia_semana = $request->dia_semana;
-                $funcionamento->horario_abertura = $request->horario_abertura;
-                $funcionamento->horario_fechamento = $request->horario_fechamento;
-                $funcionamento->intervalo = $request->intervalo;
-                $funcionamento->salao()->associate($request->salao_id);
-                if ($funcionamento->save())
-                    return response()->json(['Ok']);
-            } catch (ValidationException $e) {
-                return response()->json($e, 500);
+        if ($user->is_dono_salao) {
+            $validator = Validator::make($request->all(), [
+                'dia_semana' => 'required|string|max:3',
+                'horario_abertura' => 'required|date_format:H:i',
+                'horario_fechamento' => 'required|date_format:H:i',
+                'intervalo' => 'required|numeric',
+                'salao_id' => 'required|exists:saloes',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 422);
+            $funcionamento = Funcionamento::where('dia_semana', $request->dia_semana)
+                ->where('salao_id', $request->salao_id)->first();
+            if ($funcionamento != null) {
+                $this->destroyAll();
             }
-        return response()->json(['Sem permissão'], 500);
+            $funcionamento = new Funcionamento();
+            $funcionamento->dia_semana = $request->dia_semana;
+            $funcionamento->horario_abertura = $request->horario_abertura;
+            $funcionamento->horario_fechamento = $request->horario_fechamento;
+            $funcionamento->intervalo = $request->intervalo;
+            $funcionamento->salao()->associate($request->salao_id);
+            if ($funcionamento->save())
+                return response()->json(['Ok']);
+        }
+
+        return response()->json(['Sem permissão'], 403);
     }
 
     /**
@@ -82,27 +82,25 @@ class FuncionamentoController extends Controller {
      */
     public function update(Request $request, $id) {
         $user = Auth::user();
-        if ($user->is_dono_salao)
-            try {
-                Validator::make($request->all(), [
-                    'dia_semana' => 'required|string|max:3',
-                    'horario_abertura' => 'required',
-                    'horario_fechamento' => 'required',
-                    'intervalo' => 'required|numeric',
-                    'salao_id' => 'required',
-                ])->validate();
-
-                $funcionamento = Funcionamento::findOrFail($id);
-                $funcionamento->dia_semana = $request->dia_semana;
-                $funcionamento->horario_abertura = $request->horario_abertura;
-                $funcionamento->horario_fechamento = $request->horario_fechamento;
-                $funcionamento->intervalo = $request->intervalo;
-                $funcionamento->salao()->associate($request->salao_id);
-                if ($funcionamento->save())
-                    return response()->json(['Ok']);
-            } catch (ValidationException $e) {
-                return response()->json($e, 500);
-            }
+        if ($user->is_dono_salao) {
+            $validator = Validator::make($request->all(), [
+                'dia_semana' => 'required|string|max:3',
+                'horario_abertura' => 'required|date_format:H:i',
+                'horario_fechamento' => 'required|date_format:H:i',
+                'intervalo' => 'required|numeric',
+                'salao_id' => 'required|exists:saloes,id',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 422);
+            $funcionamento = Funcionamento::findOrFail($id);
+            $funcionamento->dia_semana = $request->dia_semana;
+            $funcionamento->horario_abertura = $request->horario_abertura;
+            $funcionamento->horario_fechamento = $request->horario_fechamento;
+            $funcionamento->intervalo = $request->intervalo;
+            $funcionamento->salao()->associate($request->salao_id);
+            if ($funcionamento->save())
+                return response()->json(['Ok']);
+        }
         return response()->json(['Sem permissão'], 500);
     }
 
@@ -120,7 +118,7 @@ class FuncionamentoController extends Controller {
                 return response()->json(['Ok']);
             }
         }
-        return response()->json(['Sem permissão'], 500);
+        return response()->json(['Sem permissão'], 403);
     }
 
     public function destroyAll() {
@@ -133,6 +131,6 @@ class FuncionamentoController extends Controller {
             return response()->json(['Ok']);
 
         }
-        return response()->json(['Sem permissão' => $user], 500);
+        return response()->json(['Sem permissão' => $user], 403);
     }
 }

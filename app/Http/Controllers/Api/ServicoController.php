@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Servico;
-use Dotenv\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Validator;
 
 class ServicoController extends Controller {
 
@@ -78,16 +77,16 @@ class ServicoController extends Controller {
     public function store(Request $request) {
         $user = Auth::user();
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
-            try {
-                \Illuminate\Support\Facades\Validator::make($request->all(), [
-                    'nome' => 'required|string|max:75',
-                    'valor' => 'required|numeric',
-                    'observacao' => '',
-                    'cabeleireiros' => 'required',
-                    'imagem' => '',
-                ])->validate();
-            } catch (ValidationException $e) {
-                return response()->json($e, 500);
+            $validator = Validator::make($request->all(), [
+                'nome' => 'required|string|max:75',
+                'valor' => 'required|numeric',
+                'observacao' => 'nullable|string',
+                'cabeleireiros' => 'required|array',
+                'cabeleireiros.*' => 'exists:users,id',
+                'imagem' => 'file|nullable',
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
             }
             $servico = new Servico();
             $servico->nome = $request->nome;
@@ -127,16 +126,16 @@ class ServicoController extends Controller {
     public function update(Request $request, $id) {
         $user = Auth::user();
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
-            try {
-                \Illuminate\Support\Facades\Validator::make($request->all(), [
-                    'nome' => 'required|string|max:75',
-                    'valor' => 'required|numeric',
-                    'observacao' => 'string',
-                    'imagem' => '',
-                    'ativo' => 'required',
-                ])->validate();
-            } catch (ValidationException $e) {
-                return response()->json($e, 500);
+            $validator = Validator::make($request->all(), [
+                'nome' => 'required|string|max:75',
+                'valor' => 'required|numeric',
+                'observacao' => 'nullable|string',
+                'cabeleireiros' => 'required|array',
+                'cabeleireiros.*' => 'exists:users,id',
+                'imagem' => 'file|nullable',
+            ]);
+            if ($validator->fails()) {
+                return response()->json($validator->errors(), 422);
             }
 
             $servico = Servico::findOrFail($id);
@@ -148,7 +147,7 @@ class ServicoController extends Controller {
                 if ($request->hasFile('imagem')) {
                     $file = $request->file('imagem');
                     if (!$file->isValid()) {
-                        return response()->json(['invalid_file_upload'], 400);
+                        return response()->json(['imagem' => 'invalid_file_upload'], 422);
                     }
                     $path = storage_path() . '/img/servico/' . $servico->id . '/';
                     $file_name = 'perfil.png';

@@ -51,46 +51,48 @@ class SalaoController extends Controller {
     }
 
     public function store(Request $request) {
-        try {
-            Validator::make($request->all(), [
+        $user = Auth::user();
+        if($user->is_dono_salao) {
+            $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
                 'cidade' => 'required|string|max:150',
                 'endereco' => 'required|string',
-                'imagem' => '',
+                'imagem' => 'nullable|file',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:20',
-            ])->validate();
-        } catch (ValidationException $e) {
-        }
-        $salao = new Salao();
-        $salao->nome = $request->nome;
-        $salao->cidade = $request->cidade;
-        $salao->endereco = $request->endereco;
-        $salao->latitude = $request->latitude;
-        $salao->longitude = $request->longitude;
-        $salao->telefone = $request->telefone;
+                'telefone' => 'required|celular_com_ddd|max:20',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 422);
+            $salao = new Salao();
+            $salao->nome = $request->nome;
+            $salao->cidade = $request->cidade;
+            $salao->endereco = $request->endereco;
+            $salao->latitude = $request->latitude;
+            $salao->longitude = $request->longitude;
+            $salao->telefone = $request->telefone;
 
-        if ($salao->save()) {
-            $user = Auth::user();
-            $user->salao()->associate($salao->id);
-            $user->is_dono_salao = true;
-            $user->is_cabeleireiro = true;
-            $user->save();
-            if ($request->hasFile('imagem')) {
-                $file = $request->file('imagem');
-                if (!$file->isValid()) {
-                    return response()->json(['invalid_file_upload'], 400);
+            if ($salao->save()) {
+                $user = Auth::user();
+                $user->salao()->associate($salao->id);
+                $user->is_dono_salao = true;
+                $user->is_cabeleireiro = true;
+                $user->save();
+                if ($request->hasFile('imagem')) {
+                    $file = $request->file('imagem');
+                    if (!$file->isValid()) {
+                        return response()->json(['invalid_file_upload'], 400);
+                    }
+                    $path = storage_path() . '/img/salao/' . $salao->id . '/';
+                    $file_name = 'perfil.' . $file->getClientOriginalExtension();
+                    $file->move($path, $file_name);
+                    $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
+                    $salao->save();
                 }
-                $path = storage_path() . '/img/salao/' . $salao->id . '/';
-                $file_name = 'perfil.' . $file->getClientOriginalExtension();
-                $file->move($path, $file_name);
-                $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
-                $salao->save();
+                return response()->json(["Ok"], 200);
             }
-            return response()->json(["Ok"], 200);
         }
-        return response()->json(['Erro'], 400);
+        return response()->json(['Erro'], 403);
     }
 
 
@@ -101,19 +103,19 @@ class SalaoController extends Controller {
 
     public function update(Request $request, $id) {
 
-        try {
-            Validator::make($request->all(), [
+
+            $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
                 'cidade' => 'required|string|max:150',
                 'endereco' => 'required|string',
-                'imagem' => '',
+                'imagem' => 'nullable|file',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:20',
-            ])->validate();
-        } catch (ValidationException $e) {
-            return response()->json($e, 500);
-        }
+                'telefone' => 'required|celular_com_ddd|max:20',
+            ]);
+        if ($validator->fails())
+            return response()->json($validator->errors(), 422);
+
         $user = Auth::user();
 
         if ($user->is_dono_salao == true && $user->salao_id == $id) {
@@ -142,7 +144,7 @@ class SalaoController extends Controller {
                 return response()->json(['Ok'], 200);
             }
         }
-        return response()->json(['Erro'], 400);
+        return response()->json(['Erro'], 500);
     }
 
 
@@ -158,8 +160,8 @@ class SalaoController extends Controller {
 
         try {
             Validator::make($request->only(['latitude', 'longitude', 'cidade']), [
-                'latitude' => 'required',
-                'longitude' => 'required',
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
                 'cidade' => 'required|string',
             ])->validate();
             $latitude = $request->latitude;

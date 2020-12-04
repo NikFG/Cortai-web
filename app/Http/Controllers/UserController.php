@@ -28,7 +28,7 @@ class UserController extends Controller {
             'imagem' => '',
         ]);
         if ($validator->fails()) {
-            return response()->json('Erro', 406);
+            return response()->json($validator->errors(), 422);
         }
 
         $user = new User();
@@ -39,7 +39,7 @@ class UserController extends Controller {
         $user->imagem = $request->imagem;
         $user->save();
         $user->sendEmailVerificationNotification();
-        return response()->json('Login criado com sucesso! Verifique seu email', 200);
+        return response()->json('Login criado com sucesso! Verifique seu email', 201);
 
     }
 
