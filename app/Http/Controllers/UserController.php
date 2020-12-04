@@ -49,13 +49,12 @@ class UserController extends Controller {
     }
 
     public function update(Request $request, $id) {
-
         $validator = Validator::make($request->all(), [
-            'nome' => 'required',
-            'telefone' => 'required',
+            'nome' => 'required|max:75',
+            'telefone' => 'required|celular_com_ddd',
         ]);
         if ($validator->fails()) {
-            return response()->json('Erro', 406);
+            return response()->json($validator->errors(), 422);
         }
         $user = User::findOrFail($id);
         $user->nome = $request->nome;
@@ -63,7 +62,7 @@ class UserController extends Controller {
         if ($user->save()) {
             return response()->json(['Ok'], 200);
         }
-        return response()->json('Erro', 406);
+        return response()->json('Erro', 403);
     }
 
 
