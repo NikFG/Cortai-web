@@ -24,7 +24,7 @@ class AuthController extends Controller {
     }
 
 
-    protected function respondWithToken($token) {
+    protected function respondWithToken($token): \Illuminate\Http\JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
 
         if ($user->email_verified_at != null || $user->is_google) {
@@ -33,15 +33,15 @@ class AuthController extends Controller {
                 'token_type' => 'bearer',
                 'expires_in' => auth('api')->factory()->getTTL() * 60,
                 'user' => $user,
-            ], 200);
+            ]);
         }
         JWTAuth::setToken($token)->invalidate();
         $user->sendEmailVerificationNotification();
-        return response()->json(['Email não verificado, olhe sua caixa de entrada ou spam'], 403);
+        return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
     }
 
     /* criar login google */
-    public function loginGoogle(Request $request) {
+    public function loginGoogle(Request $request): \Illuminate\Http\JsonResponse {
         $credentials = $request->only(['email', 'password']);
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
