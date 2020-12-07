@@ -27,7 +27,7 @@ class AuthController extends Controller {
     protected function respondWithToken($token) {
         $user = JWTAuth::setToken($token)->toUser();
 
-        if ($user->email_verified_at != null) {
+        if ($user->email_verified_at != null || $user->is_google) {
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'bearer',
@@ -56,7 +56,6 @@ class AuthController extends Controller {
         }
 
         $user = User::where('email', $request->email)->first();
-
         if ($user == null) {
             $user = new User();
             $user->nome = $request->nome;
@@ -67,9 +66,8 @@ class AuthController extends Controller {
             $user->is_google = true;
             $user->save();
         }
-        if (!$token = auth('api')->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
+        $token = auth('api')->login($user);
+
 
         return $this->respondWithToken($token);
     }
