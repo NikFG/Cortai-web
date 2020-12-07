@@ -87,6 +87,6 @@ Route::group(['middleware' => ['apiJwt']], function () {
         Route::get('/{id}', 'Api\AvaliacaoController@index');
     });
 
-    Route::get('teste', 'Api\AgendaController@teste');
+
 });
 

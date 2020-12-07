@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Funcionamento;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -81,6 +82,7 @@ class FuncionamentoController extends Controller {
      * @return JsonResponse
      */
     public function update(Request $request, $id) {
+//        $id = Crypt::decrypt($id);
         $user = Auth::user();
         if ($user->is_dono_salao) {
             $validator = Validator::make($request->all(), [
