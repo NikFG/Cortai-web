@@ -37,7 +37,7 @@ class AuthController extends Controller {
         }
         JWTAuth::setToken($token)->invalidate();
         $user->sendEmailVerificationNotification();
-        return response()->json(['Email não verificado'], 403);
+        return response()->json(['Email não verificado, olhe sua caixa de entrada ou spam'], 403);
     }
 
     /* criar login google */
