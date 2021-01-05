@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateViewSalaoHome extends Migration {
@@ -11,7 +12,7 @@ class CreateViewSalaoHome extends Migration {
      * @return void
      */
     public function up() {
-        DB::statemnt("CREATE VIEW saloes_view AS 
+        DB::statement("CREATE VIEW saloes_view AS 
                     SELECT 
                         saloes.id AS id,
                         saloes.nome AS nome,
