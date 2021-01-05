@@ -12,15 +12,16 @@ class CreateHaversineFunction extends Migration {
      */
     public function up() {
         DB::unprepared("CREATE FUNCTION haversine (lat1 DOUBLE, lng1 DOUBLE, lat2 DOUBLE, lng2 DOUBLE) RETURNS DECIMAL(30,15)
-                    
-                        DECLARE R INT;
-                        DECLARE dLat DECIMAL(30,15);
-                        DECLARE dLng DECIMAL(30,15);
-                        DECLARE a1 DECIMAL(30,15);
-                        DECLARE a2 DECIMAL(30,15);
-                        DECLARE a DECIMAL(30,15);
-                        DECLARE c DECIMAL(30,15);
-                        DECLARE d DECIMAL(30,15);
+                    AS $$
+                        DECLARE
+                        R INT;
+                         dLat DECIMAL(30,15);
+                         dLng DECIMAL(30,15);
+                         a1 DECIMAL(30,15);
+                         a2 DECIMAL(30,15);
+                         a DECIMAL(30,15);
+                         c DECIMAL(30,15);
+                         d DECIMAL(30,15);
                     BEGIN
                         SET R = 6371; -- Earth's radius in miles
                         SET dLat = RADIANS( lat2 ) - RADIANS( lat1 );
@@ -31,7 +32,8 @@ class CreateHaversineFunction extends Migration {
                         SET c = 2 * ATAN2( SQRT( a ), SQRT( 1 - a ) );
                         SET d = R * c;
                         RETURN d;
-                    END");
+                    END;
+                    $$");
     }
 
     /**
