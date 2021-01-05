@@ -34,7 +34,7 @@ class CreateViewSalaoHome extends Migration {
                         INNER JOIN servicos ON (servicos.salao_id = saloes.id))
                         INNER JOIN avaliacoes ON (horarios.id = avaliacoes.horario_id))
                     WHERE
-                        servicos.ativo = 1
+                        servicos.ativo = true
                     GROUP BY saloes.id");
     }
 
