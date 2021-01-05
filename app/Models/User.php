@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject {
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail {
     use Notifiable;
 
     /**
@@ -55,4 +56,15 @@ class User extends Authenticatable implements JWTSubject {
         return [];
     }
 
+    public function salao() {
+        return $this->belongsTo('App\Models\Salao');
+    }
+
+    public function servicos() {
+        return $this->belongsToMany('App\Models\Servico', 'cabeleireiro_servico', 'cabeleireiro_id');
+    }
+
+    public function sendEmailVerificationNotification() {
+        $this->notify(new VerifyEmail);
+    }
 }

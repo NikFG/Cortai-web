@@ -4,19 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCabeleireiroServicoTable extends Migration
-{
+class CreateCabeleireiroServicoTable extends Migration {
     /**
      * Run the migrations.
      *
      * @return void
      */
-    public function up()
-    {
+    public function up() {
         Schema::create('cabeleireiro_servico', function (Blueprint $table) {
             $table->unsignedBigInteger('cabeleireiro_id');
             $table->unsignedBigInteger('servico_id');
-            
+            $table->timestamps();
+
         });
         Schema::table('cabeleireiro_servico', function (Blueprint $table) {
             $table->primary(['cabeleireiro_id', 'servico_id']);
@@ -32,8 +31,7 @@ class CreateCabeleireiroServicoTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
+    public function down() {
         Schema::dropIfExists('cabeleireiro_servico');
     }
 }

@@ -4,8 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Salao;
+use App\Models\User;
 use App\Models\Util;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -29,6 +33,7 @@ class SalaoController extends Controller {
             foreach ($saloes as $salao) {
                 $distancia = Util::haversineGreatCircleDistance($dados['latitude'],
                     $dados['longitude'], $salao->latitude, $salao->longitude);
+
                 $json->push(['data' => $salao, 'distancia' => $distancia]);
             }
             return response()->json($json->sortBy(['distancia', 'nome']), 200);
@@ -38,68 +43,108 @@ class SalaoController extends Controller {
 
     }
 
+    public function cabeleireiros() {
+        $user = Auth::user();
+        $salao = Salao::findOrFail($user->salao_id);
+        return response()->json($salao->cabeleireiros, 200);
+
+    }
 
     public function store(Request $request) {
-
-        try {
-            Validator::make($request->all(), [
+        $user = Auth::user();
+        if($user->is_dono_salao) {
+            $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
                 'cidade' => 'required|string|max:150',
                 'endereco' => 'required|string',
-                'imagem' => 'string',//mudar pra img
+                'imagem' => 'nullable|file',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:12',
-            ])->validate();
-        } catch (ValidationException $e) {
-        }
+                'telefone' => 'required|celular_com_ddd|max:20',
+            ]);
+            if ($validator->fails())
+                return response()->json($validator->errors(), 422);
+            $salao = new Salao();
+            $salao->nome = $request->nome;
+            $salao->cidade = $request->cidade;
+            $salao->endereco = $request->endereco;
+            $salao->latitude = $request->latitude;
+            $salao->longitude = $request->longitude;
+            $salao->telefone = $request->telefone;
 
-        $salao = new Salao();
-        $salao->nome = $request->nome;
-        $salao->cidade = $request->cidade;
-        $salao->endereco = $request->endereco;
-        $salao->imagem = $request->imagem;
-        $salao->latitude = $request->latitude;
-        $salao->longitude = $request->longitude;
-        $salao->telefone = $request->telefone;
-        if ($salao->save()) {
-            return response()->json(['Ok'], 200);
+            if ($salao->save()) {
+                $user = Auth::user();
+                $user->salao()->associate($salao->id);
+                $user->is_dono_salao = true;
+                $user->is_cabeleireiro = true;
+                $user->save();
+                if ($request->hasFile('imagem')) {
+                    $file = $request->file('imagem');
+                    if (!$file->isValid()) {
+                        return response()->json(['invalid_file_upload'], 400);
+                    }
+                    $path = storage_path() . '/img/salao/' . $salao->id . '/';
+                    $file_name = 'perfil.' . $file->getClientOriginalExtension();
+                    $file->move($path, $file_name);
+                    $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
+                    $salao->save();
+                }
+                return response()->json(["Ok"], 200);
+            }
         }
-        return response()->json(['Erro'], 400);
+        return response()->json(['Erro'], 403);
     }
 
 
     public function show($id) {
         $salao = Salao::findOrFail($id);
-        return response()->json(['data'=>$salao]);
+        return response()->json($salao);
     }
 
-
     public function update(Request $request, $id) {
-        try {
-            Validator::make($request->all(), [
+
+
+            $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
                 'cidade' => 'required|string|max:150',
                 'endereco' => 'required|string',
-                'imagem' => 'string',//mudar pra img
+                'imagem' => 'nullable|file',
                 'latitude' => 'required|numeric',
                 'longitude' => 'required|numeric',
-                'telefone' => 'required|string|max:12',
-            ])->validate();
-        } catch (ValidationException $e) {
+                'telefone' => 'required|celular_com_ddd|max:20',
+            ]);
+        if ($validator->fails())
+            return response()->json($validator->errors(), 422);
+
+        $user = Auth::user();
+
+        if ($user->is_dono_salao == true && $user->salao_id == $id) {
+
+
+            $salao = Salao::findOrFail($id);
+            $salao->nome = $request->nome;
+            $salao->cidade = $request->cidade;
+            $salao->endereco = $request->endereco;
+
+            $salao->latitude = $request->latitude;
+            $salao->longitude = $request->longitude;
+            $salao->telefone = $request->telefone;
+
+            if ($request->hasFile('imagem')) {
+                $file = $request->file('imagem');
+                if (!$file->isValid()) {
+                    return response()->json(['invalid_file_upload'], 400);
+                }
+                $path = storage_path() . '/img/salao/' . $salao->id . '/';
+                $file_name = 'perfil.png';
+                $file->move($path, $file_name);
+                $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
+            }
+            if ($salao->save()) {
+                return response()->json(['Ok'], 200);
+            }
         }
-        $salao = Salao::findOrFail($id);
-        $salao->nome = $request->nome;
-        $salao->cidade = $request->cidade;
-        $salao->endereco = $request->endereco;
-        $salao->imagem = $request->imagem;
-        $salao->latitude = $request->latitude;
-        $salao->longitude = $request->longitude;
-        $salao->telefone = $request->telefone;
-        if ($salao->save()) {
-            return response()->json(['Ok'], 200);
-        }
-        return response()->json(['Erro'], 400);
+        return response()->json(['Erro'], 500);
     }
 
 
@@ -107,6 +152,49 @@ class SalaoController extends Controller {
         $salao = Salao::findOrFail($id);
         if ($salao->delete()) {
             return response()->json(['Ok'], 200);
+        }
+        return response()->json(['Erro'], 400);
+    }
+
+    public function home(Request $request) {
+
+        try {
+            Validator::make($request->only(['latitude', 'longitude', 'cidade']), [
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
+                'cidade' => 'required|string',
+            ])->validate();
+            $latitude = $request->latitude;
+            $longitude = $request->longitude;
+            $cidade = $request->cidade;
+            $salao = DB::select(
+                "SELECT *,
+                      haversine(saloes_view.latitude,saloes_view.longitude,$latitude,$longitude)
+                      AS distancia FROM saloes_view where cidade = '$cidade' ORDER BY distancia,nome");
+            return response()->json($salao, 200);
+        } catch (ValidationException $e) {
+            return response()->json($e, 406);
+        }
+    }
+
+    public function restore($id) {
+        $salao = Salao::onlyTrashed()->findOrFail($id);
+
+        if ($salao->restore()) {
+            return response()->json(['Ok'], 200);
+        }
+        return response()->json(['Erro'], 400);
+    }
+
+    public function adicionaCabeleireiro(Request $request, $email) {
+        $user = Auth::user();
+        if ($user->is_dono_salao == true) {
+            $cabeleireiro = User::where('email', $email)->firstOrFail();
+            $cabeleireiro->salao()->associate($user->salao_id);
+            $cabeleireiro->is_cabeleireiro = true;
+            if ($cabeleireiro->save()) {
+                return response()->json(['Ok'], 200);
+            }
         }
         return response()->json(['Erro'], 400);
     }
