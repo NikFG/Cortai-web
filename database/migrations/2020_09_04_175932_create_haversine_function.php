@@ -33,7 +33,7 @@ class CreateHaversineFunction extends Migration {
                         SET d = R * c;
                         RETURN d;
                     END;
-                    $$");
+                    $$ LANGUAGE plpgsql;");
     }
 
     /**
