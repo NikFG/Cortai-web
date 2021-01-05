@@ -11,29 +11,12 @@ class CreateHaversineFunction extends Migration {
      * @return void
      */
     public function up() {
-        DB::unprepared("CREATE FUNCTION haversine (lat1 DOUBLE PRECISION, lng1 DOUBLE PRECISION, lat2 DOUBLE PRECISION, lng2 DOUBLE PRECISION) RETURNS DECIMAL(30,15)
-                    AS $$
-                        DECLARE
-                        R INT;
-                         dLat DECIMAL(30,15);
-                         dLng DECIMAL(30,15);
-                         a1 DECIMAL(30,15);
-                         a2 DECIMAL(30,15);
-                         a DECIMAL(30,15);
-                         c DECIMAL(30,15);
-                         d DECIMAL(30,15);
-                    BEGIN
-                        SET R = 6371; -- Earth's radius in miles
-                        SET dLat = RADIANS( lat2 ) - RADIANS( lat1 );
-                        SET dLng = RADIANS( lng2 ) - RADIANS( lng1 );
-                        SET a1 = SIN( dLat / 2 ) * SIN( dLat / 2 );
-                        SET a2 = SIN( dLng / 2 ) * SIN( dLng / 2 ) * COS( RADIANS( lng1 )) * COS( RADIANS( lat2 ) );
-                        SET a = a1 + a2;
-                        SET c = 2 * ATAN2( SQRT( a ), SQRT( 1 - a ) );
-                        SET d = R * c;
-                        RETURN d;
-                    END;
-                    $$ LANGUAGE plpgsql;");
+        DB::unprepared("CREATE OR REPLACE FUNCTION haversine(latitude1 numeric(10,6),longitude1 numeric(10,6), latitude2 numeric(10,6), longitude2 numeric(10,6))
+RETURNS double precision AS
+$BODY$
+	SELECT 6371 * acos( cos( radians(latitude1) ) * cos( radians( latitude2 ) ) * cos( radians( longitude1 ) - radians(longitude2) ) + sin( radians(latitude1) ) * sin( radians( latitude2 ) ) ) AS distance
+$BODY$
+LANGUAGE sql;");
     }
 
     /**
