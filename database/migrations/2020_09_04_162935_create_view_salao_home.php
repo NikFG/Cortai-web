@@ -29,9 +29,9 @@ class CreateViewSalaoHome extends Migration {
                         MAX(servicos.valor) AS maior_valor
                     FROM
                         (((saloes
-                        JOIN horarios ON (saloes.id = horarios.salao_id))
-                        JOIN servicos ON (servicos.salao_id = saloes.id))
-                        JOIN avaliacoes ON (horarios.id = avaliacoes.horario_id))
+                        INNER JOIN horarios ON (saloes.id = horarios.salao_id))
+                        INNER JOIN servicos ON (servicos.salao_id = saloes.id))
+                        INNER JOIN avaliacoes ON (horarios.id = avaliacoes.horario_id))
                     WHERE
                         servicos.ativo = 1
                     GROUP BY saloes.id");
