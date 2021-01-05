@@ -11,7 +11,7 @@ class CreateHaversineFunction extends Migration {
      * @return void
      */
     public function up() {
-        DB::unprepared("CREATE FUNCTION haversine (lat1 DOUBLE, lng1 DOUBLE, lat2 DOUBLE, lng2 DOUBLE) RETURNS DECIMAL(30,15)
+        DB::unprepared("CREATE FUNCTION haversine (lat1 DOUBLE PRECISION, lng1 DOUBLE PRECISION, lat2 DOUBLE PRECISION, lng2 DOUBLE PRECISION) RETURNS DECIMAL(30,15)
                     AS $$
                         DECLARE
                         R INT;
