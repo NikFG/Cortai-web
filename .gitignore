@@ -18,5 +18,3 @@ Homestead.json
 .phpunit.result.cache
 
 .idea/
-
-composer.lock
