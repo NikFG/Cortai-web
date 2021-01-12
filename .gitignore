@@ -18,3 +18,5 @@ Homestead.json
 .phpunit.result.cache
 
 .idea/
+
+cortai-api.pem
