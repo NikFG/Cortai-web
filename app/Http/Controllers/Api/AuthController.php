@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -28,6 +29,8 @@ class AuthController extends Controller {
         $user = JWTAuth::setToken($token)->toUser();
 
         if ($user->email_verified_at != null || $user->is_google) {
+            if ($user->imagem != null)
+                $user->imagem = base64_encode(Storage::cloud()->get($user->imagem));
             return response()->json([
                 'access_token' => $token,
                 'token_type' => 'bearer',
