@@ -9,6 +9,7 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('login/google', 'Api\AuthController@loginGoogle');
     Route::post('user/create', 'UserController@store');
     Route::post('login/reset', 'Api\AuthController@resetPassword');
+
 });
 Route::post('password/reset', 'Api\AuthController@reset');
 
@@ -17,6 +18,8 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
     Route::post('auth/logout', 'Api\AuthController@logout');
     Route::post('auth/edit/{id}', 'UserController@update');
+    Route::post('auth/edit/imagem/{id}', 'UserController@updateImage');
+
     Route::get('users', 'UserController@index');
 
     //Salão

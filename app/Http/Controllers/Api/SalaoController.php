@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Salao;
 use App\Models\User;
 use App\Models\Util;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 class SalaoController extends Controller {
 
+
+    private $base_storage = 'images/salao/';
 
     public function index(Request $request) {
 
@@ -52,7 +55,7 @@ class SalaoController extends Controller {
 
     public function store(Request $request) {
         $user = Auth::user();
-        if($user->is_dono_salao) {
+        if ($user->is_dono_salao) {
             $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:70',
                 'cidade' => 'required|string|max:150',
@@ -83,13 +86,12 @@ class SalaoController extends Controller {
                     if (!$file->isValid()) {
                         return response()->json(['invalid_file_upload'], 400);
                     }
-                    $path = storage_path() . '/img/salao/' . $salao->id . '/';
-                    $file_name = 'perfil.' . $file->getClientOriginalExtension();
-                    $file->move($path, $file_name);
-                    $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
+                    $file_name = $this->base_storage . $salao->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                    Storage::cloud()->put($file_name, file_get_contents($file));
+                    $salao->imagem = $file_name;
                     $salao->save();
                 }
-                return response()->json(["Ok"], 200);
+                return response()->json(["Ok"]);
             }
         }
         return response()->json(['Erro'], 403);
@@ -98,21 +100,27 @@ class SalaoController extends Controller {
 
     public function show($id) {
         $salao = Salao::findOrFail($id);
+        if ($salao->imagem != null)
+            try {
+                $salao->imagem = base64_encode(Storage::cloud()->get($salao->imagem));
+            } catch (FileNotFoundException $e) {
+                return response()->json(['Arquivo não encontrado'], 500);
+            }
         return response()->json($salao);
     }
 
     public function update(Request $request, $id) {
 
 
-            $validator = Validator::make($request->all(), [
-                'nome' => 'required|string|max:70',
-                'cidade' => 'required|string|max:150',
-                'endereco' => 'required|string',
-                'imagem' => 'nullable|file',
-                'latitude' => 'required|numeric',
-                'longitude' => 'required|numeric',
-                'telefone' => 'required|celular_com_ddd|max:20',
-            ]);
+        $validator = Validator::make($request->all(), [
+            'nome' => 'required|string|max:70',
+            'cidade' => 'required|string|max:150',
+            'endereco' => 'required|string',
+            'imagem' => 'nullable|file',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'telefone' => 'required|celular_com_ddd|max:20',
+        ]);
         if ($validator->fails())
             return response()->json($validator->errors(), 422);
 
@@ -130,18 +138,20 @@ class SalaoController extends Controller {
             $salao->longitude = $request->longitude;
             $salao->telefone = $request->telefone;
 
+
             if ($request->hasFile('imagem')) {
+
                 $file = $request->file('imagem');
                 if (!$file->isValid()) {
                     return response()->json(['invalid_file_upload'], 400);
                 }
-                $path = storage_path() . '/img/salao/' . $salao->id . '/';
-                $file_name = 'perfil.png';
-                $file->move($path, $file_name);
-                $salao->imagem = 'storage/img/salao/' . $salao->id . '/' . $file_name;
+                $file_name = $this->base_storage . $salao->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                Storage::cloud()->put($file_name, file_get_contents($file));
+
+                $salao->imagem = $file_name;
             }
             if ($salao->save()) {
-                return response()->json(['Ok'], 200);
+                return response()->json(['Ok']);
             }
         }
         return response()->json(['Erro'], 500);
@@ -171,6 +181,14 @@ class SalaoController extends Controller {
                 "SELECT *,
                       haversine(saloes_view.latitude,saloes_view.longitude,$latitude,$longitude)
                       AS distancia FROM saloes_view where cidade = '$cidade' ORDER BY distancia,nome");
+            foreach ($salao as $s) {
+                if ($s->imagem != null)
+                    try {
+                        $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                    } catch (FileNotFoundException $e) {
+                        return response()->json(['Arquivo não encontrado'], 500);
+                    }
+            }
             return response()->json($salao, 200);
         } catch (ValidationException $e) {
             return response()->json($e, 406);

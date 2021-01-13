@@ -19,6 +19,7 @@
         "laravel/ui": "^3.1",
         "laravellegends/pt-br-validator": "^8.0",
         "lcobucci/jwt": "3.3.3",
+        "league/flysystem-aws-s3-v3": "~1.0",
         "pusher/pusher-php-server": "^4.1",
         "tymon/jwt-auth": "^1.0"
     },

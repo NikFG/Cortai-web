@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Servico;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ServicoController extends Controller {
+    private $base_storage = 'images/servico/';
 
     public function index() {
         $user = Auth::user();
@@ -21,6 +24,14 @@ class ServicoController extends Controller {
             $servicos = Servico::whereHas('users', function ($q) use ($user) {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
+        }
+        foreach ($servicos as $s) {
+            if ($s->imagem != null)
+                try {
+                    $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                } catch (FileNotFoundException $e) {
+                    return response()->json(['Arquivo não encontrado'], 500);
+                }
         }
         return response()->json($servicos, 200);
     }
@@ -57,6 +68,14 @@ class ServicoController extends Controller {
                 ->orderBy('nome')
                 ->get();
         }
+        foreach ($servicos as $s) {
+            if ($s->imagem != null)
+                try {
+                    $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                } catch (FileNotFoundException $e) {
+                    return response()->json(['Arquivo não encontrado'], 500);
+                }
+        }
         return response()->json($servicos, 200);
     }
 
@@ -70,6 +89,14 @@ class ServicoController extends Controller {
             $servicos = Servico::onlyTrashed()->whereHas('users', function ($q) use ($user) {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
+        }
+        foreach ($servicos as $s) {
+            if ($s->imagem != null)
+                try {
+                    $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                } catch (FileNotFoundException $e) {
+                    return response()->json(['Arquivo não encontrado'], 500);
+                }
         }
         return response()->json($servicos, 200);
     }
@@ -101,10 +128,9 @@ class ServicoController extends Controller {
                     if (!$file->isValid()) {
                         return response()->json(['invalid_file_upload'], 400);
                     }
-                    $path = storage_path() . '/img/servico/' . $servico->id . '/';
-                    $file_name = 'perfil.png';
-                    $file->move($path, $file_name);
-                    $servico->imagem = 'storage/img/servico/' . $servico->id . '/' . $file_name;
+                    $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                    Storage::cloud()->put($file_name, file_get_contents($file));
+                    $servico->imagem = $file_name;
                     $servico->save();
                 }
             }
@@ -119,6 +145,12 @@ class ServicoController extends Controller {
     public function show(int $id) {
 
         $servico = Servico::where('id', $id)->with('users')->get();
+        if ($servico->imagem != null)
+            try {
+                $servico->imagem = base64_encode(Storage::cloud()->get($servico->imagem));
+            } catch (FileNotFoundException $e) {
+                return response()->json(['Arquivo não encontrado'], 500);
+            }
         return response()->json($servico, 200);
     }
 
@@ -149,10 +181,10 @@ class ServicoController extends Controller {
                     if (!$file->isValid()) {
                         return response()->json(['imagem' => 'invalid_file_upload'], 422);
                     }
-                    $path = storage_path() . '/img/servico/' . $servico->id . '/';
-                    $file_name = 'perfil.png';
-                    $file->move($path, $file_name);
-                    $servico->imagem = 'storage/img/servico/' . $servico->id . '/' . $file_name;
+                    $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                    Storage::cloud()->put($file_name, file_get_contents($file));
+
+                    $servico->imagem = $file_name;
                 }
                 $servico->save();
                 if ($request->ativo == false) {
@@ -165,8 +197,7 @@ class ServicoController extends Controller {
     }
 
 
-    public
-    function destroy($id) {
+    public function destroy($id) {
         $user = Auth::user();
 
         $servico = Servico::findOrFail($id);
@@ -177,8 +208,7 @@ class ServicoController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
-    public
-    function restore($id) {
+    public function restore($id) {
         $user = Auth::user();
 
         $servico = Servico::onlyTrashed()->findOrFail($id);
@@ -189,8 +219,7 @@ class ServicoController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
-    private
-    function permite_alterar_servico($user, Servico $servico) {
+    private function permite_alterar_servico($user, Servico $servico) {
         return $user->salao_id == $servico->salao_id
             && ($user->is_dono_salao || $servico->users->pluck('id')->contains($user->id));
     }

@@ -7,9 +7,11 @@ use App\Http\Controllers\Api\AuthController;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller {
+    private $base_storage = 'images/user/';
 
     public function index() {
         $user = User::all();
@@ -25,7 +27,7 @@ class UserController extends Controller {
             'nome' => 'required|string',
             'password' => 'required|string',
             'telefone' => 'required',
-            'imagem' => '',
+            'imagem' => 'file|nullable',
         ]);
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
@@ -36,7 +38,15 @@ class UserController extends Controller {
         $user->password = bcrypt($request->password);
         $user->email = $request->email;
         $user->telefone = $request->telefone;
-        $user->imagem = $request->imagem;
+        if ($request->hasFile('imagem')) {
+            $file = $request->file('imagem');
+            if (!$file->isValid()) {
+                return response()->json(['invalid_file_upload'], 400);
+            }
+            $file_name = $this->base_storage . $user->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+            Storage::cloud()->put($file_name, file_get_contents($file));
+            $user->imagem = $file_name;
+        }
         $user->save();
         $user->sendEmailVerificationNotification();
         return response()->json('Login criado com sucesso! Verifique seu email', 201);
@@ -65,6 +75,27 @@ class UserController extends Controller {
         return response()->json('Erro', 403);
     }
 
+    public function updateImage(Request $request, $id) {
+        $user = User::findOrFail($id);
+        $validator = Validator::make($request->all(), [
+            'imagem' => 'file|required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+        if ($request->hasFile('imagem')) {
+            $file = $request->file('imagem');
+            if (!$file->isValid()) {
+                return response()->json(['invalid_file_upload'], 400);
+            }
+            $file_name = $this->base_storage . $user->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+            Storage::cloud()->put($file_name, file_get_contents($file));
+            $user->imagem = $file_name;
+            $user->save();
+            return  response()->json('Imagem enviada corretamente');
+        }
+        return response()->json('Imagem não enviada corretamente', 500);
+    }
 
     public function destroy($id) {
 
