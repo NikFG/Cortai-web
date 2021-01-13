@@ -139,7 +139,7 @@ class ServicoController extends Controller {
             }
 
             $servico = Servico::findOrFail($id);
-            if ($this->permite_alterar_servico($user, $servico)) {
+          //  if ($this->permite_alterar_servico($user, $servico)) {
                 $servico->nome = $request->nome;
                 $servico->valor = $request->valor;
                 $servico->observacao = $request->observacao;
@@ -159,7 +159,7 @@ class ServicoController extends Controller {
                     $this->destroy($id);
                 }
                 return response()->json(['Ok'], 200);
-            }
+         //   }
         }
         return response()->json(["erro"], 500);
     }
