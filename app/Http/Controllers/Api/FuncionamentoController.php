@@ -42,16 +42,16 @@ class FuncionamentoController extends Controller {
                 'horario_abertura' => 'required|date_format:H:i',
                 'horario_fechamento' => 'required|date_format:H:i',
                 'intervalo' => 'required|numeric',
-                'salao_id' => 'required|exists:saloes',
+                'salao_id' => 'required',
             ]);
             if ($validator->fails())
                 return response()->json($validator->errors(), 422);
             $funcionamento = Funcionamento::where('dia_semana', $request->dia_semana)
                 ->where('salao_id', $request->salao_id)->first();
-            if ($funcionamento != null) {
-                $this->destroyAll();
+            if ($funcionamento == null) {
+                $funcionamento = new Funcionamento();
             }
-            $funcionamento = new Funcionamento();
+
             $funcionamento->dia_semana = $request->dia_semana;
             $funcionamento->horario_abertura = $request->horario_abertura;
             $funcionamento->horario_fechamento = $request->horario_fechamento;
