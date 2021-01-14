@@ -15,7 +15,7 @@ class FormaPagamento extends Model {
 
     public function saloes() {
         return $this->belongsToMany('App\Models\Salao',
-            'salao_formapagamentos', 'forma_pagamento_id')
+            'salao_formapagamentos', 'forma_pagamento_id','salao_id')
             ->withPivot('descricao', 'valor');
     }
 }
