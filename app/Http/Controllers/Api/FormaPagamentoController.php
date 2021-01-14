@@ -16,7 +16,7 @@ class FormaPagamentoController extends Controller {
     public function index($salao_id) {
         $forma_pagamento = FormaPagamento::whereHas('saloes',
             function (Builder $query) use ($salao_id) {
-                $query->find($salao_id);
+                $query->where('salao_id',$salao_id);
             })->get();
         return response()->json($forma_pagamento, 200);
     }

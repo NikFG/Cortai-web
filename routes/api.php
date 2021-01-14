@@ -66,7 +66,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
     //Forma Pagamento
     Route::group(['prefix' => 'formaPagamento'], function () {
-        Route::get('/', 'Api\FormaPagamentoController@index');
+        Route::get('/{salao_id}', 'Api\FormaPagamentoController@index');
         Route::post('store', 'Api\FormaPagamentoController@store');
         Route::post('edit/{id}', 'Api\FormaPagamentoController@update');
         Route::get('show/{id}', 'Api\FormaPagamentoController@show');
