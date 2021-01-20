@@ -19,6 +19,9 @@ class FuncionamentoController extends Controller {
      */
     public function index($id) {
         $funcionamento = Funcionamento::where('salao_id', $id)->get();
+        if ($funcionamento->count() == 0) {
+            return response()->json('[]', 404);
+        }
         return response()->json($funcionamento, 200);
     }
 
