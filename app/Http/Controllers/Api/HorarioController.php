@@ -22,12 +22,16 @@ class HorarioController extends Controller {
         $user = Auth::user();
         $horarios = Horario::where('cliente_id', $user->id)
             ->where('pago', $request->pago)
+            ->where('cancelado', false)
             ->orderBy('data', 'desc')
             ->orderBy('hora', 'desc')
             ->with('servicos')->has('servicos')
             ->with('cliente')
             ->with('cabeleireiro')
             ->get();
+        if ($horarios->count() == 0) {
+            return response()->json([0 => "Não há horários"], 404);
+        }
         return response()->json(compact('horarios'), 200);
     }
 
@@ -36,12 +40,16 @@ class HorarioController extends Controller {
         if ($user->is_cabeleireiro) {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
                 ->where('confirmado', $confirmado)
+                ->where('cancelado', false)
                 ->with('cliente')
                 ->with('cabeleireiro')
                 ->with('servicos')
                 ->orderBy('data', 'desc')
                 ->orderBy('hora', 'desc')
                 ->get();
+            if ($horarios->count() == 0) {
+                return response()->json('Não  há horários', 404);
+            }
             return response()->json($horarios, 200);
         }
         return response()->json(['Erro'], 400);
