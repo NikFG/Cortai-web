@@ -42,7 +42,7 @@ class AvaliacaoController extends Controller {
             'valor' => 'required|numeric',
             'data' => 'required|date',
             'observacao' => '',
-            'horario_id' => 'required|exists:horarios',
+            'horario_id' => 'required|exists:horarios,id',
 
         ]);
         if ($validator->fails())
