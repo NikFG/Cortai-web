@@ -18,12 +18,14 @@ class CreateGaleriasTable extends Migration {
             $table->unsignedBigInteger('cabeleireiro_id');
             $table->unsignedBigInteger('cliente_id')->nullable();
             $table->unsignedBigInteger('salao_id');
+            $table->unsignedBigInteger('servico_id');
             $table->timestamps();
         });
         Schema::table('galerias', function (Blueprint $table) {
             $table->foreign('cabeleireiro_id')->references('id')->on('users');
             $table->foreign('cliente_id')->references('id')->on('users');
             $table->foreign('salao_id')->references('id')->on('saloes');
+            $table->foreign('servico_id')->references('id')->on('servicos');
         });
     }
 
