@@ -69,11 +69,11 @@ class GaleriaController extends Controller {
             if (!$file->isValid()) {
                 return response()->json(['invalid_file_upload'], 400);
             }
-            $file_name = $this->base_storage . $galeria->salao_id . '/' . date('mdYHis') . uniqid() . 'png';
+            $file_name = $this->base_storage . $galeria->salao_id . '/' . date('mdYHis') . uniqid() . '.png';
             Storage::cloud()->put($file_name, file_get_contents($file));
             $galeria->imagem = $file_name;
-            $galeria->save();
-            return response()->json('Ok');
+            if ($galeria->save())
+                return response()->json('Ok');
 
         }
         return response()->json('Erro', 500);

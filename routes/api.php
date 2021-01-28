@@ -52,7 +52,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     Route::group(['prefix' => 'horarios'], function () {
         Route::get('/cliente/{pago}', 'Api\HorarioController@clienteIndex');
         Route::get('/cabeleireiro/{confirmado}', 'Api\HorarioController@cabeleireiroIndex');
-        Route::get('/cabeleireiro', 'Api\HorarioController@cabeleireiroIndex2');
+        Route::get('/calendario', 'Api\HorarioController@calendario');
         Route::get('/cabeleireiro/{cabeleireiro_id}/data/{data}', 'Api\HorarioController@agenda');
         Route::post('store', 'Api\HorarioController@store');
         Route::post('edit/{id}', 'Api\HorarioController@update');
@@ -89,9 +89,10 @@ Route::group(['middleware' => ['apiJwt']], function () {
     Route::group(['prefix' => 'avaliacoes'], function () {
         Route::get('/{id}', 'Api\AvaliacaoController@index');
     });
+
     Route::group(['prefix' => 'galeria'], function () {
         Route::get('/{salao_id} ', 'Api\GaleriaController@index');
-        Route::post('store', 'Api\GaleriaController@store');
+        Route::post('/store', 'Api\GaleriaController@store');
     });
 
 
