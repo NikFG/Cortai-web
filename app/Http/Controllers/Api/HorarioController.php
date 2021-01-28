@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Horario;
 use App\Models\User;
 use Carbon\Carbon;
+use Carbon\Traits\Date;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -55,17 +56,27 @@ class HorarioController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
-    public function cabeleireiroIndex2() {
+    public function calendario() {
         $user = Auth::user();
         if ($user->is_cabeleireiro) {
+            $dia_hoje = Carbon::today();
             $horarios = Horario::where('cabeleireiro_id', $user->id)
+                ->where('confirmado', false)
+                ->where('cancelado', false)
+                ->whereDate('data', '>=', $dia_hoje)
                 ->with('cliente')
                 ->with('cabeleireiro')
                 ->with('servicos')
                 ->orderBy('data', 'desc')
                 ->orderBy('hora', 'desc')
                 ->get();
-            return response()->json($horarios, 200);
+            if ($horarios->count() == 0) {
+                return response()->json('Não  há horários', 404);
+            }
+            $horarios_hoje = $horarios->where('data', $dia_hoje);
+            $horarios_sete = $horarios->whereBetween('data', [$dia_hoje->addDay(), $dia_hoje->addDays(7)]);
+            $horarios_mes = $horarios->where('data', '>', $dia_hoje->addDays(7));
+            return response()->json([0 => $horarios_hoje, 1 => $horarios_sete, 2 => $horarios_mes]);
         }
         return response()->json(['Erro'], 400);
     }
