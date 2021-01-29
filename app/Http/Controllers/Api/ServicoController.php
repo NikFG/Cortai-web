@@ -43,8 +43,16 @@ class ServicoController extends Controller {
             ->with('cabeleireiros')
             ->orderBy('nome')
             ->get();
+        foreach ($servicos as $s) {
+            if ($s->imagem != null)
+                try {
+                    $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                } catch (FileNotFoundException $e) {
+                    return response()->json(['Arquivo não encontrado'], 500);
+                }
+        }
 
-        return response()->json($servicos, 200);
+        return response()->json($servicos);
     }
 
     public function indexAll() {
@@ -171,27 +179,27 @@ class ServicoController extends Controller {
             }
 
             $servico = Servico::findOrFail($id);
-          //  if ($this->permite_alterar_servico($user, $servico)) {
-                $servico->nome = $request->nome;
-                $servico->valor = $request->valor;
-                $servico->observacao = $request->observacao;
-                $servico->salao_id = $user->salao_id;
-                if ($request->hasFile('imagem')) {
-                    $file = $request->file('imagem');
-                    if (!$file->isValid()) {
-                        return response()->json(['imagem' => 'invalid_file_upload'], 422);
-                    }
-                    $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
-                    Storage::cloud()->put($file_name, file_get_contents($file));
+            //  if ($this->permite_alterar_servico($user, $servico)) {
+            $servico->nome = $request->nome;
+            $servico->valor = $request->valor;
+            $servico->observacao = $request->observacao;
+            $servico->salao_id = $user->salao_id;
+            if ($request->hasFile('imagem')) {
+                $file = $request->file('imagem');
+                if (!$file->isValid()) {
+                    return response()->json(['imagem' => 'invalid_file_upload'], 422);
+                }
+                $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                Storage::cloud()->put($file_name, file_get_contents($file));
 
-                    $servico->imagem = $file_name;
-                }
-                $servico->save();
-                if ($request->ativo == false) {
-                    $this->destroy($id);
-                }
-                return response()->json(['Ok'], 200);
-         //   }
+                $servico->imagem = $file_name;
+            }
+            $servico->save();
+            if ($request->ativo == false) {
+                $this->destroy($id);
+            }
+            return response()->json(['Ok'], 200);
+            //   }
         }
         return response()->json(["erro"], 500);
     }
