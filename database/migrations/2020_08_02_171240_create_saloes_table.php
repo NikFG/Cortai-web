@@ -23,6 +23,7 @@ class CreateSaloesTable extends Migration
             $table->double('longitude');
             $table->string('telefone', 12);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

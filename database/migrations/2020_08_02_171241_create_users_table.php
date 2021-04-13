@@ -23,6 +23,7 @@ class CreateUsersTable extends Migration {
             $table->boolean('is_dono_salao')->nullable()->default(false);
             $table->unsignedBigInteger('salao_id')->nullable();
             $table->string('password');
+            $table->boolean('is_google')->default(0);
             $table->rememberToken();
             $table->timestamps();
         });
