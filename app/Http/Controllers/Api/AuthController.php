@@ -29,26 +29,21 @@ class AuthController extends Controller {
 
     private function respondWithToken($token): JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
-
         if ($user->email_verified_at != null || $user->is_google) {
-            if ($user->imagem != null)
+//            if ($user->imagem != null)
 //                $user->imagem = base64_encode(Storage::cloud()->get($user->imagem));
-            return response()->json([
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth('api')->factory()->getTTL() * 60,
-                'user' => $user,
-            ]);
+                return response()->json([
+                    'access_token' => $token,
+                    'token_type' => 'bearer',
+                    'expires_in' => auth('api')->factory()->getTTL() * 60,
+                    'user' => $user,
+                ]);
         }
         JWTAuth::setToken($token)->invalidate();
         $user->sendEmailVerificationNotification();
         return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
     }
 
-    public function loginGoogle2(Request $request) {
-        $user = Socialite::driver('google')->userFromToken($request->password);
-        return response()->json(["u" => $user, "request" => $request->all()]);
-    }
 
     /* criar login google */
     public function loginGoogle(Request $request): JsonResponse {
@@ -91,8 +86,10 @@ class AuthController extends Controller {
         $credentials = $request->validate(['email' => 'required|email']);
         $user = User::where('email', $request->only('email'))->firstOrFail();
         if ($user != null) {
-            Password::sendResetLink($credentials);
-            return response()->json(["msg" => 'Reset password link sent on your email id.']);
+            $status = Password::sendResetLink(
+                $request->only('email')
+            );
+            return response()->json(["status" => $status, "msg" => 'Reset password link sent on your email id.']);
         } else {
             return response()->json(["msg" => "Usuário não encontrado"], 401);
         }
