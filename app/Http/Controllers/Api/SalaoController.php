@@ -189,7 +189,10 @@ class SalaoController extends Controller {
                         return response()->json(['Arquivo não encontrado'], 500);
                     }
             }
-            return response()->json($salao, 200);
+            if (empty($salao)) {
+                return response()->json([], 204);
+            }
+            return response()->json($salao);
         } catch (ValidationException $e) {
             return response()->json($e, 406);
         }

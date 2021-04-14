@@ -45,10 +45,6 @@ class AuthController extends Controller {
         return response()->json('Email não verificado, olhe sua caixa de entrada ou spam', 403);
     }
 
-    public function loginGoogle2(Request $request) {
-        $user = Socialite::driver('google')->userFromToken($request->password);
-        return response()->json(["u" => $user, "request" => $request->all()]);
-    }
 
     /* criar login google */
     public function loginGoogle(Request $request): JsonResponse {
