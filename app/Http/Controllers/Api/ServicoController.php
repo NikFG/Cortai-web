@@ -25,6 +25,9 @@ class ServicoController extends Controller {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
         }
+        if (empty($servicos)) {
+            return response()->json([], 204);
+        }
         foreach ($servicos as $s) {
             if ($s->imagem != null)
                 try {
@@ -33,7 +36,8 @@ class ServicoController extends Controller {
                     return response()->json(['Arquivo não encontrado'], 500);
                 }
         }
-        return response()->json($servicos, 200);
+
+        return response()->json($servicos);
     }
 
     public function servicoSalao($idSalao) {

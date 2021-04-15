@@ -36,11 +36,10 @@ class HorarioController extends Controller {
         return response()->json(compact('horarios'), 200);
     }
 
-    public function cabeleireiroIndex($confirmado) {
+    public function cabeleireiroIndex() {
         $user = Auth::user();
         if ($user->is_cabeleireiro) {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
-                ->where('confirmado', $confirmado)
                 ->where('cancelado', false)
                 ->with('cliente')
                 ->with('cabeleireiro')
@@ -49,7 +48,7 @@ class HorarioController extends Controller {
                 ->orderBy('hora', 'desc')
                 ->get();
             if ($horarios->count() == 0) {
-                return response()->json('Não  há horários', 404);
+                return response()->json('Não  há horários', 204);
             }
             return response()->json($horarios);
         }
