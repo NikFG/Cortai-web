@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
 
 class ServicoController extends Controller {
     private $base_storage = 'images/servico/';
@@ -115,13 +116,14 @@ class ServicoController extends Controller {
 
     public function store(Request $request) {
         $user = Auth::user();
+        $cab = [];
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
             $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:75',
                 'valor' => 'required|numeric',
                 'observacao' => 'nullable|string',
                 'cabeleireiros' => 'required|array',
-                'cabeleireiros.*' => 'exists:users,id',
+                'cabeleireiros.*.id' => 'exists:users,id',
                 'imagem' => 'file|nullable',
             ]);
             if ($validator->fails()) {
@@ -134,7 +136,11 @@ class ServicoController extends Controller {
             $servico->salao()->associate($user->salao_id);
 
             if ($servico->save()) {
-                $servico->cabeleireiros()->sync($request->cabeleireiros);
+                foreach ($request->cabeleireiros as $c) {
+                    $cab = Arr::prepend($cab, (int)$c['id']);
+                }
+
+                $servico->cabeleireiros()->sync($cab);
                 if ($request->hasFile('imagem')) {
                     $file = $request->file('imagem');
                     if (!$file->isValid()) {
@@ -169,13 +175,14 @@ class ServicoController extends Controller {
 
     public function update(Request $request, $id) {
         $user = Auth::user();
+        $cab = [];
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
             $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:75',
                 'valor' => 'required|numeric',
                 'observacao' => 'nullable|string',
                 'cabeleireiros' => 'required|array',
-                'cabeleireiros.*' => 'exists:users,id',
+                'cabeleireiros.*.id' => 'exists:users,id',
                 'imagem' => 'file|nullable',
             ]);
             if ($validator->fails()) {
@@ -188,6 +195,11 @@ class ServicoController extends Controller {
             $servico->valor = $request->valor;
             $servico->observacao = $request->observacao;
             $servico->salao_id = $user->salao_id;
+
+            foreach ($request->cabeleireiros as $c) {
+                $cab = Arr::prepend($cab, (int)$c['id']);
+            }
+            $servico->cabeleireiros()->sync($cab);
             if ($request->hasFile('imagem')) {
                 $file = $request->file('imagem');
                 if (!$file->isValid()) {
