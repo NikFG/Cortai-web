@@ -32,7 +32,10 @@ class UserController extends Controller {
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-
+        $user = User::where('email', $request->email)->first();
+        if ($user != null) {
+            return response()->json([], 409);
+        }
         $user = new User();
         $user->nome = $request->nome;
         $user->password = bcrypt($request->password);
@@ -92,7 +95,7 @@ class UserController extends Controller {
             Storage::cloud()->put($file_name, file_get_contents($file));
             $user->imagem = $file_name;
             $user->save();
-            return  response()->json('Imagem enviada corretamente');
+            return response()->json('Imagem enviada corretamente');
         }
         return response()->json('Imagem não enviada corretamente', 500);
     }
