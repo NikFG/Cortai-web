@@ -3,10 +3,8 @@
 namespace App\Http\Controllers;
 
 
-use App\Http\Controllers\Api\AuthController;
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -95,7 +93,7 @@ class UserController extends Controller {
             Storage::cloud()->put($file_name, file_get_contents($file));
             $user->imagem = $file_name;
             $user->save();
-            return response()->json('Imagem enviada corretamente');
+            return response()->json('Imagem enviada corretamente', 201);
         }
         return response()->json('Imagem não enviada corretamente', 500);
     }

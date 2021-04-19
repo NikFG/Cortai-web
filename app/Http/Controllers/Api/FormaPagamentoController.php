@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\FormaPagamento;
-use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 
 class FormaPagamentoController extends Controller {
     /**
@@ -16,7 +16,7 @@ class FormaPagamentoController extends Controller {
     public function index($salao_id) {
         $forma_pagamento = FormaPagamento::whereHas('saloes',
             function (Builder $query) use ($salao_id) {
-                $query->where('salao_id',$salao_id);
+                $query->where('salao_id', $salao_id);
             })->get();
         return response()->json($forma_pagamento, 200);
     }
