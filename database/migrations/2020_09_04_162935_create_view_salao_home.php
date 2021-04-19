@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 
 class CreateViewSalaoHome extends Migration {
     /**
@@ -26,8 +24,10 @@ class CreateViewSalaoHome extends Migration {
                            ifnull(avg(avaliacoes.valor), 0) AS media,
                            ifnull(min(servicos.valor), 0)   AS menor_valor,
                            ifnull(max(servicos.valor), 0)   AS maior_valor
-                    from (((saloes left join horarios on (saloes.id = horarios.salao_id)) left join servicos on (servicos.salao_id = saloes.id))
-                             left join avaliacoes on (horarios.id = avaliacoes.horario_id))
+                    from (((`cortai`.`saloes` left join `cortai`.`horarios` on (`cortai`.`saloes`.`id` = `cortai`.`horarios`.`salao_id`))
+                        left join `cortai`.`servicos` on (`cortai`.`servicos`.`salao_id` = `cortai`.`saloes`.`id`))
+                        left join `cortai`.`avaliacoes` on (`cortai`.`horarios`.`id` = `cortai`.`avaliacoes`.`horario_id`)
+                        inner join funcionamentos on (`cortai`.`funcionamentos`.`salao_id` = saloes.id))
                     where servicos.deleted_at is null
                       and saloes.deleted_at is null
                     group by saloes.id;");
