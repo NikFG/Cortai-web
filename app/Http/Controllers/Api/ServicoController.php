@@ -72,7 +72,7 @@ class ServicoController extends Controller {
                 ->get();
         } else {
             $servicos = Servico::withTrashed()
-                ->whereHas('users', function ($q) use ($user) {
+                ->whereHas('cabeleireiros', function ($q) use ($user) {
                     $q->where('id', $user->id);
                 })
                 ->where('salao_id', $user->salao_id)
@@ -98,7 +98,7 @@ class ServicoController extends Controller {
         if ($user->is_dono_salao) {
             $servicos = Servico::onlyTrashed()->where('salao_id', $user->salao_id)->get();
         } else {
-            $servicos = Servico::onlyTrashed()->whereHas('users', function ($q) use ($user) {
+            $servicos = Servico::onlyTrashed()->whereHas('cabeleireiros', function ($q) use ($user) {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
         }
