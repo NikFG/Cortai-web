@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -30,14 +28,14 @@ class AuthController extends Controller {
     private function respondWithToken($token): JsonResponse {
         $user = JWTAuth::setToken($token)->toUser();
         if ($user->email_verified_at != null || $user->is_google) {
-//            if ($user->imagem != null)
-//                $user->imagem = base64_encode(Storage::cloud()->get($user->imagem));
-                return response()->json([
-                    'access_token' => $token,
-                    'token_type' => 'bearer',
-                    'expires_in' => auth('api')->factory()->getTTL() * 60,
-                    'user' => $user,
-                ]);
+            if ($user->imagem != null)
+                $user->imagem = base64_encode(Storage::cloud()->get($user->imagem));
+            return response()->json([
+                'access_token' => $token,
+                'token_type' => 'bearer',
+                'expires_in' => auth('api')->factory()->getTTL() * 60,
+                'user' => $user,
+            ]);
         }
         JWTAuth::setToken($token)->invalidate();
         $user->sendEmailVerificationNotification();
@@ -63,15 +61,30 @@ class AuthController extends Controller {
             $user->nome = $google_user->name;
             $user->password = bcrypt($request->token);
             $user->email = $google_user->email;
-            $user->imagem = $google_user->avatar;
             $user->is_google = true;
             $user->save();
-
+            $this->updateImagem($google_user->avatar, $user->id);
         }
+
         $token = auth('api')->login($user);
 
 
         return $this->respondWithToken($token);
+    }
+
+    private function updateImagem($file, $id) {
+        $user = User::findOrFail($id);
+        if ($file->hasFile()) {
+            if (!$file->isValid()) {
+                return response()->json(['invalid_file_upload'], 400);
+            }
+            $file_name = $this->base_storage . $user->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+            Storage::cloud()->put($file_name, file_get_contents($file));
+            $user->imagem = $file_name;
+            $user->save();
+            return true;
+        }
+        return false;
     }
 
     public function logout() {

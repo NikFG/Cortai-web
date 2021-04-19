@@ -5,12 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Servico;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Arr;
 
 class ServicoController extends Controller {
     private $base_storage = 'images/servico/';
@@ -190,32 +189,32 @@ class ServicoController extends Controller {
             }
 
             $servico = Servico::findOrFail($id);
-            //  if ($this->permite_alterar_servico($user, $servico)) {
-            $servico->nome = $request->nome;
-            $servico->valor = $request->valor;
-            $servico->observacao = $request->observacao;
-            $servico->salao_id = $user->salao_id;
+            if ($this->permite_alterar_servico($user, $servico)) {
+                $servico->nome = $request->nome;
+                $servico->valor = $request->valor;
+                $servico->observacao = $request->observacao;
+                $servico->salao_id = $user->salao_id;
 
-            foreach ($request->cabeleireiros as $c) {
-                $cab = Arr::prepend($cab, (int)$c['id']);
-            }
-            $servico->cabeleireiros()->sync($cab);
-            if ($request->hasFile('imagem')) {
-                $file = $request->file('imagem');
-                if (!$file->isValid()) {
-                    return response()->json(['imagem' => 'invalid_file_upload'], 422);
+                foreach ($request->cabeleireiros as $c) {
+                    $cab = Arr::prepend($cab, (int)$c['id']);
                 }
-                $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
-                Storage::cloud()->put($file_name, file_get_contents($file));
+                $servico->cabeleireiros()->sync($cab);
+                if ($request->hasFile('imagem')) {
+                    $file = $request->file('imagem');
+                    if (!$file->isValid()) {
+                        return response()->json(['imagem' => 'invalid_file_upload'], 422);
+                    }
+                    $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                    Storage::cloud()->put($file_name, file_get_contents($file));
 
-                $servico->imagem = $file_name;
+                    $servico->imagem = $file_name;
+                }
+                $servico->save();
+                if ($request->ativo == false) {
+                    $this->destroy($id);
+                }
+                return response()->json(['Ok'], 200);
             }
-            $servico->save();
-            if ($request->ativo == false) {
-                $this->destroy($id);
-            }
-            return response()->json(['Ok'], 200);
-            //   }
         }
         return response()->json(["erro"], 500);
     }
