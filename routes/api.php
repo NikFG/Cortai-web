@@ -51,7 +51,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
     //Horário
     Route::group(['prefix' => 'horarios'], function () {
         Route::get('/cliente/{pago}', 'Api\HorarioController@clienteIndex');
-        Route::get('/cabeleireiro/{confirmado}', 'Api\HorarioController@cabeleireiroIndex');
+        Route::get('/cabeleireiro', 'Api\HorarioController@cabeleireiroIndex');
         Route::get('/calendario', 'Api\HorarioController@calendario');
         Route::get('/cabeleireiro/{cabeleireiro_id}/data/{data}', 'Api\HorarioController@agenda');
         Route::post('store', 'Api\HorarioController@store');

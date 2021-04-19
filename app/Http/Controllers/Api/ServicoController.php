@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
 
 class ServicoController extends Controller {
     private $base_storage = 'images/servico/';
@@ -25,6 +26,9 @@ class ServicoController extends Controller {
                 $q->where('id', $user->id);
             })->where('salao_id', $user->salao_id)->get();
         }
+        if (empty($servicos)) {
+            return response()->json([], 204);
+        }
         foreach ($servicos as $s) {
             if ($s->imagem != null)
                 try {
@@ -33,7 +37,8 @@ class ServicoController extends Controller {
                     return response()->json(['Arquivo não encontrado'], 500);
                 }
         }
-        return response()->json($servicos, 200);
+
+        return response()->json($servicos);
     }
 
     public function servicoSalao($idSalao) {
@@ -43,8 +48,16 @@ class ServicoController extends Controller {
             ->with('cabeleireiros')
             ->orderBy('nome')
             ->get();
+        foreach ($servicos as $s) {
+            if ($s->imagem != null)
+                try {
+                    $s->imagem = base64_encode(Storage::cloud()->get($s->imagem));
+                } catch (FileNotFoundException $e) {
+                    return response()->json(['Arquivo não encontrado'], 500);
+                }
+        }
 
-        return response()->json($servicos, 200);
+        return response()->json($servicos);
     }
 
     public function indexAll() {
@@ -103,13 +116,14 @@ class ServicoController extends Controller {
 
     public function store(Request $request) {
         $user = Auth::user();
+        $cab = [];
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
             $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:75',
                 'valor' => 'required|numeric',
                 'observacao' => 'nullable|string',
                 'cabeleireiros' => 'required|array',
-                'cabeleireiros.*' => 'exists:users,id',
+                'cabeleireiros.*.id' => 'exists:users,id',
                 'imagem' => 'file|nullable',
             ]);
             if ($validator->fails()) {
@@ -122,7 +136,11 @@ class ServicoController extends Controller {
             $servico->salao()->associate($user->salao_id);
 
             if ($servico->save()) {
-                $servico->cabeleireiros()->sync($request->cabeleireiros);
+                foreach ($request->cabeleireiros as $c) {
+                    $cab = Arr::prepend($cab, (int)$c['id']);
+                }
+
+                $servico->cabeleireiros()->sync($cab);
                 if ($request->hasFile('imagem')) {
                     $file = $request->file('imagem');
                     if (!$file->isValid()) {
@@ -157,13 +175,14 @@ class ServicoController extends Controller {
 
     public function update(Request $request, $id) {
         $user = Auth::user();
+        $cab = [];
         if ($user->is_dono_salao || $user->is_cabeleireiro) {
             $validator = Validator::make($request->all(), [
                 'nome' => 'required|string|max:75',
                 'valor' => 'required|numeric',
                 'observacao' => 'nullable|string',
                 'cabeleireiros' => 'required|array',
-                'cabeleireiros.*' => 'exists:users,id',
+                'cabeleireiros.*.id' => 'exists:users,id',
                 'imagem' => 'file|nullable',
             ]);
             if ($validator->fails()) {
@@ -171,27 +190,32 @@ class ServicoController extends Controller {
             }
 
             $servico = Servico::findOrFail($id);
-          //  if ($this->permite_alterar_servico($user, $servico)) {
-                $servico->nome = $request->nome;
-                $servico->valor = $request->valor;
-                $servico->observacao = $request->observacao;
-                $servico->salao_id = $user->salao_id;
-                if ($request->hasFile('imagem')) {
-                    $file = $request->file('imagem');
-                    if (!$file->isValid()) {
-                        return response()->json(['imagem' => 'invalid_file_upload'], 422);
-                    }
-                    $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
-                    Storage::cloud()->put($file_name, file_get_contents($file));
+            //  if ($this->permite_alterar_servico($user, $servico)) {
+            $servico->nome = $request->nome;
+            $servico->valor = $request->valor;
+            $servico->observacao = $request->observacao;
+            $servico->salao_id = $user->salao_id;
 
-                    $servico->imagem = $file_name;
+            foreach ($request->cabeleireiros as $c) {
+                $cab = Arr::prepend($cab, (int)$c['id']);
+            }
+            $servico->cabeleireiros()->sync($cab);
+            if ($request->hasFile('imagem')) {
+                $file = $request->file('imagem');
+                if (!$file->isValid()) {
+                    return response()->json(['imagem' => 'invalid_file_upload'], 422);
                 }
-                $servico->save();
-                if ($request->ativo == false) {
-                    $this->destroy($id);
-                }
-                return response()->json(['Ok'], 200);
-         //   }
+                $file_name = $this->base_storage . $servico->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
+                Storage::cloud()->put($file_name, file_get_contents($file));
+
+                $servico->imagem = $file_name;
+            }
+            $servico->save();
+            if ($request->ativo == false) {
+                $this->destroy($id);
+            }
+            return response()->json(['Ok'], 200);
+            //   }
         }
         return response()->json(["erro"], 500);
     }

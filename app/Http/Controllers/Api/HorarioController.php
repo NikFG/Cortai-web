@@ -36,11 +36,10 @@ class HorarioController extends Controller {
         return response()->json(compact('horarios'), 200);
     }
 
-    public function cabeleireiroIndex($confirmado) {
+    public function cabeleireiroIndex() {
         $user = Auth::user();
         if ($user->is_cabeleireiro) {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
-                ->where('confirmado', $confirmado)
                 ->where('cancelado', false)
                 ->with('cliente')
                 ->with('cabeleireiro')
@@ -49,9 +48,9 @@ class HorarioController extends Controller {
                 ->orderBy('hora', 'desc')
                 ->get();
             if ($horarios->count() == 0) {
-                return response()->json('Não  há horários', 404);
+                return response()->json('Não  há horários', 204);
             }
-            return response()->json($horarios, 200);
+            return response()->json($horarios);
         }
         return response()->json(['Erro'], 400);
     }
@@ -74,9 +73,9 @@ class HorarioController extends Controller {
                 return response()->json('Não  há horários', 404);
             }
             $horarios_hoje = $horarios->where('data', $dia_hoje);
-            $horarios_sete = $horarios->whereBetween('data', [$dia_hoje->addDay(), $dia_hoje->addDays(7)]);
-            $horarios_mes = $horarios->where('data', '>', $dia_hoje->addDays(7));
-            return response()->json([0 => $horarios_hoje, 1 => $horarios_sete, 2 => $horarios_mes]);
+            $horarios_sete = $horarios->whereBetween('data', [Carbon::today()->addDay(), Carbon::today()->addDays(7)]);
+            $horarios_mes = $horarios->where('data', '>', Carbon::today()->addDays(7));
+            return response()->json([$horarios_hoje, $horarios_sete, $horarios_mes]);
         }
         return response()->json(['Erro'], 400);
     }
