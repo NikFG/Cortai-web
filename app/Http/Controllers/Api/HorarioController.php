@@ -133,7 +133,7 @@ class HorarioController extends Controller {
             $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
             OneSignal::addParams($params)->sendNotificationToExternalUser(
                 "Dia {$request->data} às {$request->hora}.Verifique seu app!!",
-                $horario->cabeleireiro->id,
+                (string)$horario->cabeleireiro->id,
                 $url = null,
                 $data = null,
                 $buttons = null,
