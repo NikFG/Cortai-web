@@ -55,11 +55,11 @@ class HorarioController extends Controller {
 
     public function calendario() {
         $user = Auth::user();
+        $dia_hoje = Carbon::today();
         if ($user->is_cabeleireiro) {
-            $dia_hoje = Carbon::today();
             $horarios = Horario::where('cabeleireiro_id', $user->id)
-                ->where('confirmado', false)
                 ->where('cancelado', false)
+                ->where('confirmado', false)
                 ->whereDate('data', '>=', $dia_hoje)
                 ->with('cliente')
                 ->with('cabeleireiro')
@@ -68,15 +68,14 @@ class HorarioController extends Controller {
                 ->orderBy('hora', 'desc')
                 ->get();
             if ($horarios->count() == 0) {
-                return response()->json('Não  há horários', 404);
+                return response()->json('Não  há horários', 204);
             }
-            $horarios_hoje = $horarios->where('data', $dia_hoje);
-            $horarios_sete = $horarios->whereBetween('data', [Carbon::today()->addDay(), Carbon::today()->addDays(7)]);
-            $horarios_mes = $horarios->where('data', '>', Carbon::today()->addDays(7));
-            return response()->json([$horarios_hoje, $horarios_sete, $horarios_mes]);
+            return response()->json($horarios);
         }
         return response()->json(['Erro'], 400);
     }
+
+  
 
     public function agenda($cabeleireiro_id, $data) {
         $formatada = Carbon::parse($data);
