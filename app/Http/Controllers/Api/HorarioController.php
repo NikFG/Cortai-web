@@ -222,7 +222,7 @@ class HorarioController extends Controller {
         $hora = Carbon::parse($horario->hora);
         OneSignal::addParams($params)->sendNotificationToExternalUser(
             "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}.Verifique seu app!!",
-            (string)$horario->cabeleireiro->id,
+            (string)$horario->cliente->id,
             $url = null,
             $data = null,
             $buttons = null,
