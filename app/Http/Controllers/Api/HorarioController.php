@@ -133,7 +133,7 @@ class HorarioController extends Controller {
             $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
             OneSignal::addParams($params)->sendNotificationToExternalUser(
                 "Dia {$request->data} às {$request->hora}.Verifique seu app!!",
-                $horario->cabeleireiro->id,
+                (string)$horario->cabeleireiro->id,
                 $url = null,
                 $data = null,
                 $buttons = null,
@@ -222,7 +222,7 @@ class HorarioController extends Controller {
         $hora = Carbon::parse($horario->hora);
         OneSignal::addParams($params)->sendNotificationToExternalUser(
             "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}.Verifique seu app!!",
-            $horario->cabeleireiro->id,
+            (string)$horario->cabeleireiro->id,
             $url = null,
             $data = null,
             $buttons = null,
@@ -247,7 +247,7 @@ class HorarioController extends Controller {
         OneSignal::addParams($params)->sendNotificationToExternalUser(
             "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}\n
             Pedimos desculpas pelo ocorrido, mas você pode agendar novamente",
-            $horario->cabeleireiro->id,
+            (string)$horario->cabeleireiro->id,
             $url = null,
             $data = null,
             $buttons = null,
