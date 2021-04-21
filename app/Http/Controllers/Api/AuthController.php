@@ -97,7 +97,7 @@ class AuthController extends Controller {
 
         //TODO tratar se email existe
         $credentials = $request->validate(['email' => 'required|email']);
-        $user = User::where('email', $request->only('email'))->firstOrFail();
+        $user = User::where('email', $request->only('email'))->first();
         if ($user != null) {
             $status = Password::sendResetLink(
                 $request->only('email')
