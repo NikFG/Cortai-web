@@ -27,6 +27,7 @@ class HorarioController extends Controller {
             ->with('servicos')->has('servicos')
             ->with('cliente')
             ->with('cabeleireiro')
+            ->with('avaliacao')
             ->get();
         if ($horarios->count() == 0) {
             return response()->json([0 => "Não há horários"], 404);
@@ -75,7 +76,7 @@ class HorarioController extends Controller {
         return response()->json(['Erro'], 400);
     }
 
-  
+
 
     public function agenda($cabeleireiro_id, $data) {
         $formatada = Carbon::parse($data);
