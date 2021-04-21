@@ -22,6 +22,9 @@ class CreateAvaliacaoesTable extends Migration {
         Schema::table('avaliacoes', function (Blueprint $table) {
             $table->foreign('horario_id')->references('id')->on('horarios');
         });
+        Schema::table('horarios', function (Blueprint $table) {
+        $table->foreign('avaliacao_id')->references('id')->on('avaliacoes');
+        });
     }
 
     /**

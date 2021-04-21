@@ -22,6 +22,7 @@ class CreateHorariosTable extends Migration {
             $table->unsignedBigInteger('cliente_id');
             $table->unsignedBigInteger('salao_id');
             $table->unsignedBigInteger('forma_pagamento_id');
+            $table->unsignedBigInteger('avaliacao_id')->nullable();
             $table->timestamps();
         });
         Schema::table('horarios', function (Blueprint $table) {
