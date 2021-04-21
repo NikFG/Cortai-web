@@ -21,7 +21,7 @@ class AvaliacaoController extends Controller {
     public function index($id) {
         $avaliacoes = Avaliacao::with('horario')
             ->whereHas('horario', function (Builder $query) use ($id) {
-                $query->where('salao_id', $id);
+                return $query->where('salao_id', $id);
             })
             ->orderByDesc('data')
             ->get();
