@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use File;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
@@ -12,8 +13,9 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Socialite\Facades\Socialite;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
-
 class AuthController extends Controller {
+    private string $base_storage = 'images/users/';
+
     public function login(Request $request) {
         $credentials = $request->only(['email', 'password']);
 
@@ -63,7 +65,7 @@ class AuthController extends Controller {
             $user->email = $google_user->email;
             $user->is_google = true;
             $user->save();
-            $this->updateImagem($google_user->avatar, $user->id);
+            $this->googleAvatar($google_user->getAvatar(), $user);
         }
 
         $token = auth('api')->login($user);
@@ -72,19 +74,11 @@ class AuthController extends Controller {
         return $this->respondWithToken($token);
     }
 
-    private function updateImagem($file, $id) {
-        $user = User::findOrFail($id);
-        if ($file->hasFile()) {
-            if (!$file->isValid()) {
-                return response()->json(['invalid_file_upload'], 400);
-            }
-            $file_name = $this->base_storage . $user->id . '/' . 'perfil.' . $file->getClientOriginalExtension();
-            Storage::cloud()->put($file_name, file_get_contents($file));
-            $user->imagem = $file_name;
-            $user->save();
-            return true;
-        }
-        return false;
+    private function googleAvatar($file, $user) {
+        $file_name = $this->base_storage . $user->id . '/' . 'perfil.jpg';
+        Storage::cloud()->put($file_name, file_get_contents($file));
+        $user->imagem = $file_name;
+        $user->save();
     }
 
     public function logout() {
@@ -95,7 +89,6 @@ class AuthController extends Controller {
 
     public function resetPassword(Request $request) {
 
-        //TODO tratar se email existe
         $credentials = $request->validate(['email' => 'required|email']);
         $user = User::where('email', $request->only('email'))->first();
         if ($user != null) {
