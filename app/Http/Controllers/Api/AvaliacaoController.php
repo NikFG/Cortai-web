@@ -24,7 +24,10 @@ class AvaliacaoController extends Controller {
             })
             ->orderByDesc('data')
             ->get();
-        return response()->json($avaliacoes, 200);
+        if ($avaliacoes->count() == 0) {
+            return response()->json([], 204);
+        }
+        return response()->json($avaliacoes);
     }
 
     /**
