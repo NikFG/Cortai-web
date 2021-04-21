@@ -8,6 +8,6 @@ class Avaliacao extends Model {
     protected $table = 'avaliacoes';
 
     public function horario() {
-        return $this->belongsTo('App\Models\Horario');
+        return $this->hasOne('App\Models\Horario','horario_id');
     }
 }
