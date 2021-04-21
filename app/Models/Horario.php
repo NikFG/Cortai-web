@@ -16,7 +16,7 @@ class Horario extends Model {
     ];
 
     public function avaliacao() {
-        return $this->hasOne('App\Models\Avaliacao', 'avaliacao_id');
+        return $this->hasOne('App\Models\Avaliacao');
     }
 
     public function cabeleireiro() {
