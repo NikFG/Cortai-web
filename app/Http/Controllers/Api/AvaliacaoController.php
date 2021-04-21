@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Avaliacao;
+use App\Models\Horario;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -54,8 +55,11 @@ class AvaliacaoController extends Controller {
         $avaliacao->data = Carbon::parse($request->data)->format('Y-m-d');
         $avaliacao->valor = $request->valor;
         $avaliacao->observacao = $request->observacao;
-        $avaliacao->horario()->associate($request->horario_id);
+        $avaliacao->horario_id = $request->horario_id;
+
         if ($avaliacao->save()) {
+            $horario = Horario::find($request->horario_id);
+            $horario->avaliacao_id = $avaliacao->id;
             return response()->json(['Ok'], 201);
         }
         return response()->json(['Erro'], 500);
