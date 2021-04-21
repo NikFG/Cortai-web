@@ -56,7 +56,7 @@ class AvaliacaoController extends Controller {
         $avaliacao->observacao = $request->observacao;
         $avaliacao->horario()->associate($request->horario_id);
         if ($avaliacao->save()) {
-            return response()->json(['Ok'], 200);
+            return response()->json(['Ok'], 201);
         }
         return response()->json(['Erro'], 500);
     }
