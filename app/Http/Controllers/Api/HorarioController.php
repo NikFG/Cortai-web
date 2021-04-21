@@ -59,8 +59,9 @@ class HorarioController extends Controller {
         $dia_hoje = Carbon::today();
         if ($user->is_cabeleireiro) {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
+                ->where('confirmado', true)
                 ->where('cancelado', false)
-                ->where('confirmado', false)
+                ->where('pago',false)
                 ->whereDate('data', '>=', $dia_hoje)
                 ->with('cliente')
                 ->with('cabeleireiro')
