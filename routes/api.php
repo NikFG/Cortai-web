@@ -86,6 +86,7 @@ Route::group(['middleware' => ['apiJwt']], function () {
 
     Route::group(['prefix' => 'avaliacoes'], function () {
         Route::get('/{id}', 'Api\AvaliacaoController@index');
+        Route::post('/store', 'Api\AvaliacaoController@store');
     });
 
     Route::group(['prefix' => 'galeria'], function () {
