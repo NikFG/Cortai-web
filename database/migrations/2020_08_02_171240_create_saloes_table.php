@@ -21,7 +21,7 @@ class CreateSaloesTable extends Migration
             $table->string('imagem', 300)->nullable();
             $table->double('latitude');
             $table->double('longitude');
-            $table->string('telefone', 12);
+            $table->string('telefone', 20);
             $table->timestamps();
             $table->softDeletes();
         });
