@@ -59,7 +59,7 @@ class FuncionamentoController extends Controller {
             $funcionamento->intervalo = $request->intervalo;
             $funcionamento->salao()->associate($request->salao_id);
             if ($funcionamento->save())
-                return response()->json(['Ok']);
+                return response()->json(['Ok'], 201);
         }
 
         return response()->json(['Sem permissão'], 403);

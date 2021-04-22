@@ -144,7 +144,7 @@ class HorarioController extends Controller {
 
             event(new ContaConfirmar($horario->cabeleireiro_id, $this->contaHorario($horario->cabeleireiro_id)));
 
-            return response()->json(['Ok'], 200);
+            return response()->json(['Ok'], 201);
         }
 
         return response()->json(['Erro'], 500);

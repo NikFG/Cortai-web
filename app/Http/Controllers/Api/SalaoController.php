@@ -91,7 +91,7 @@ class SalaoController extends Controller {
                     $salao->imagem = $file_name;
                     $salao->save();
                 }
-                return response()->json($salao->id);
+                return response()->json($salao->id, 201);
             }
         }
         return response()->json('Você não possui permissões suficientes', 403);
