@@ -152,7 +152,7 @@ class ServicoController extends Controller {
                 }
             }
 
-            return response()->json(['Ok'], 200);
+            return response()->json(['Ok'], 201);
         }
         return response()->json(["erro"], 500);
 

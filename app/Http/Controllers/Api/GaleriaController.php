@@ -72,7 +72,7 @@ class GaleriaController extends Controller {
             Storage::cloud()->put($file_name, file_get_contents($file));
             $galeria->imagem = $file_name;
             if ($galeria->save())
-                return response()->json('Ok');
+                return response()->json('Ok',201);
 
         }
         return response()->json('Erro', 500);
