@@ -61,7 +61,7 @@ class HorarioController extends Controller {
             $horarios = Horario::where('cabeleireiro_id', $user->id)
                 ->where('confirmado', true)
                 ->where('cancelado', false)
-                ->where('pago',false)
+                ->where('pago', false)
                 ->whereDate('data', '>=', $dia_hoje)
                 ->with('cliente')
                 ->with('cabeleireiro')
@@ -76,7 +76,6 @@ class HorarioController extends Controller {
         }
         return response()->json(['Erro'], 400);
     }
-
 
 
     public function agenda($cabeleireiro_id, $data) {
@@ -240,6 +239,19 @@ class HorarioController extends Controller {
         $horario->save();
         $quantidade = $this->contaHorario($horario->cabeleireiro_id);
         $params = [];
+        $user = Auth::user();
+        $id = "";
+        $mensagem = "";
+        $nome = "";
+        if ($user->id == $horario->cabeleireiro->id) {
+            $id = (string)$horario->cliente->id;
+            $mensagem = "Pedimos desculpas pelo ocorrido, mas você pode agendar novamente";
+            $nome = $horario->cliente->nome;
+        } else {
+            $id = (string)$horario->cabeleireiro->id;
+            $mensagem = "Pedimos desculpas pelo ocorrido, mas {$horario->cliente->nome}  cancelou o horário marcado.";
+            $nome = $horario->cabeleireiro->nome;
+        }
         $params['android_accent_color'] = 'FFF57D21'; // argb color value
         $params['small_icon'] = 'ic_noti_icon'; // icon res name specified in your app
         $params['large_icon'] = 'ic_noti_icon'; // icon res name specified in your app
@@ -247,13 +259,13 @@ class HorarioController extends Controller {
         $hora = Carbon::parse($horario->hora);
         OneSignal::addParams($params)->sendNotificationToExternalUser(
             "Dia {$data->format('d/m/Y')} às {$hora->format('H:i')}\n
-            Pedimos desculpas pelo ocorrido, mas você pode agendar novamente",
-            (string)$horario->cabeleireiro->id,
+          $mensagem",
+            $id,
             $url = null,
             $data = null,
             $buttons = null,
             $schedule = null,
-            "Infelizmente seu horário com {$horario->cabeleireiro->nome} foi cancelado! =("
+            "Infelizmente seu horário com $nome foi cancelado! =("
         );
         event(new ContaConfirmar($horario->cabeleireiro_id, $quantidade));
         return response()->json(['Ok']);
