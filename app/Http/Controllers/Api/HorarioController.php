@@ -246,11 +246,11 @@ class HorarioController extends Controller {
         if ($user->id == $horario->cabeleireiro->id) {
             $id = (string)$horario->cliente->id;
             $mensagem = "Pedimos desculpas pelo ocorrido, mas você pode agendar novamente";
-            $nome = $horario->cliente->nome;
+            $nome = $horario->cabeleireiro->nome;
         } else {
             $id = (string)$horario->cabeleireiro->id;
             $mensagem = "Pedimos desculpas pelo ocorrido, mas {$horario->cliente->nome}  cancelou o horário marcado.";
-            $nome = $horario->cabeleireiro->nome;
+            $nome = $horario->cliente->nome;
         }
         $params['android_accent_color'] = 'FFF57D21'; // argb color value
         $params['small_icon'] = 'ic_noti_icon'; // icon res name specified in your app
