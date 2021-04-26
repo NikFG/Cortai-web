@@ -101,4 +101,7 @@ class UserController extends Controller {
     public function destroy($id) {
 
     }
+    public function termos(){
+      return response()->file(storage_path('/app/public/termos_uso.pdf'));
+    }
 }
