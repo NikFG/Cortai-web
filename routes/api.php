@@ -10,7 +10,7 @@ Route::group(['prefix' => 'auth'], function () {
 
 });
 Route::post('password/reset', 'Api\AuthController@reset');
-
+Route::get('termos', 'UserController@termos');
 
 Route::group(['middleware' => ['apiJwt']], function () {
 
