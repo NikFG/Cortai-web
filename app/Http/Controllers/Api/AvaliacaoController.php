@@ -60,6 +60,7 @@ class AvaliacaoController extends Controller {
         if ($avaliacao->save()) {
             $horario = Horario::find($request->horario_id);
             $horario->avaliacao_id = $avaliacao->id;
+            $horario->save();
             return response()->json(['Ok'], 201);
         }
         return response()->json(['Erro'], 500);
