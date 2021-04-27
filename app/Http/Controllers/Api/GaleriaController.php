@@ -48,20 +48,20 @@ class GaleriaController extends Controller {
         $validator = Validator::make($request->all(), [
             'descricao' => 'required|string|max:500',
             'imagem' => 'required|file',
-            'salao_id' => 'required|exists:saloes,id',
-            'servico_id' => 'required|exists:servicos,id',
-            'cabeleireiro_id' => 'required|exists:users,id',
-            'cliente_id' => 'nullable',
+            'salao' => 'required',
+            'servico' => 'required',
+            'cabeleireiro' => 'required',
+            'cliente' => 'nullable',
         ]);
         if ($validator->fails())
             return response()->json($validator->errors(), 422);
 
         $galeria = new Galeria();
-        $galeria->salao()->associate($request->salao_id);
-        $galeria->servico()->associate($request->servico_id);
-        $galeria->cabeleireiro()->associate($request->cabeleireiro_id);
-        if ($request->cliente_id != null)
-            $galeria->cliente()->associate($request->cliente_id);
+        $galeria->salao()->associate($request->salao['id']);
+        $galeria->servico()->associate($request->servico['id']);
+        $galeria->cabeleireiro()->associate($request->cabeleireiro['id']);
+        if ($request->cliente != null)
+            $galeria->cliente()->associate($request->cliente['id']);
         $galeria->descricao = $request->descricao;
         if ($request->hasFile('imagem')) {
             $file = $request->file('imagem');
@@ -72,7 +72,7 @@ class GaleriaController extends Controller {
             Storage::cloud()->put($file_name, file_get_contents($file));
             $galeria->imagem = $file_name;
             if ($galeria->save())
-                return response()->json('Ok',201);
+                return response()->json('Ok', 201);
 
         }
         return response()->json('Erro', 500);
