@@ -19,17 +19,21 @@
             height: 100vh;
             margin: 0;
         }
+
         .full-height {
             height: 100vh;
         }
+
         .flex-center {
             align-items: center;
             display: flex;
             justify-content: center;
         }
+
         .position-ref {
             position: relative;
         }
+
         input {
             padding: 10pt;
             width: 60%;
@@ -38,6 +42,7 @@
             border: 1px solid lightgray;
             margin: 10pt;
         }
+
         .form-container {
             display: flex;
             flex-direction: column;
@@ -49,6 +54,7 @@
             border-radius: 5pt;
             background: white;
         }
+
         button {
             border-radius: 5pt;
             padding: 10pt 14pt;
@@ -57,6 +63,7 @@
             font-size: 14pt;
             margin: 20pt;
         }
+
         button:hover {
             background: lightgray;
         }
@@ -65,14 +72,14 @@
 <body>
 <div class="flex-center position-ref full-height">
     <form class="form-container" action="api/password/reset" method="POST">
-        <h2>Forgot Password?</h2>
+        <h2>Esqueceu sua senha?</h2>
 
-        <input name="email" placeholder="Enter email" value="{{request()->get('email')}}">
-        <input name="password" placeholder="Enter new password">
-        <input name="password_confirmation" placeholder="Confirm new password">
+        <input name="email" placeholder="Digite seu email" value="{{request()->get('email')}}">
+        <input name="password" placeholder="Digite sua sunha">
+        <input name="password_confirmation" placeholder="Confirme sua senha">
         <input hidden name="token" placeholder="token" value="{{request()->get('token')}}">
 
-        <button type="submit">Submit</button>
+        <button type="submit">Confirmar</button>
     </form>
 </div>
 </body>
