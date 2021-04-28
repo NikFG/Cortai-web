@@ -114,9 +114,9 @@ class AuthController extends Controller {
         });
 
         if ($reset_password_status == Password::INVALID_TOKEN) {
-            return response()->json(["msg" => "Invalid token provided"], 403);
+            return response()->json(["msg" => "Token inválido"], 403);
         }
 
-        return response()->json(["msg" => "Password has been successfully changed"]);
+        return response()->json(["msg" => "Senha alterada com sucesso"]);
     }
 }
